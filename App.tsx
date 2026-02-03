@@ -7,8 +7,8 @@ import { CodeBackground } from './components/CodeBackground';
 import { SpotlightCard } from './components/SpotlightCard';
 import { CertificationCard } from './components/CertificationCard';
 import { GitHubIcon, LinkedInIcon, ExternalLinkIcon, EmailIcon, FileTextIcon } from './components/Icon';
-import profilePhoto from './assets/profile_photo.png';
-import resume from './assets/resume.pdf';
+import profilePhoto from './src/assets/profile_photo.png';
+import resume from './src/assets/resume.pdf';
 
 function App() {
   const [activeSection, setActiveSection] = useState<string>('about');
