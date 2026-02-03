@@ -13,18 +13,11 @@ export const ExperienceCard: React.FC<ExperienceCardProps> = ({ job }) => {
   return (
     <div 
       ref={cardRef}
-      className="group relative grid pb-1 transition-all sm:grid-cols-8 sm:gap-8 md:gap-4 rounded-md"
+      className="group relative grid pb-1 transition-all sm:grid-cols-8 sm:gap-8 md:gap-4 rounded-lg border border-slate-800/50 p-4 bg-slate-900/90 hover:bg-slate-900"
     >
-      {/* 
-         Background Layer: 
-         - Default: Transparent
-         - Hover: High opacity dark slate (slate-900 at 95% opacity) to block the PCB background for readability.
-      */}
-      <div className="absolute -inset-x-4 -inset-y-4 z-0 hidden rounded-md transition-all motion-reduce:transition-none lg:-inset-x-6 lg:block lg:group-hover:bg-slate-900/95 lg:group-hover:shadow-[inset_0_1px_0_0_rgba(148,163,184,0.1)] lg:group-hover:drop-shadow-lg"></div>
-
-      {/* Spotlight Layer */}
+      {/* Spotlight Background Layer */}
       <div 
-        className="absolute -inset-x-4 -inset-y-4 z-0 rounded-md transition-opacity duration-300 opacity-0 group-hover:opacity-100 lg:-inset-x-6 pointer-events-none"
+        className="absolute -inset-px z-0 rounded-lg transition-opacity duration-300 opacity-0 group-hover:opacity-100 pointer-events-none"
         style={{
           background: `radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(94, 234, 212, 0.1), transparent 40%)`
         }}
@@ -32,7 +25,7 @@ export const ExperienceCard: React.FC<ExperienceCardProps> = ({ job }) => {
 
       {/* Border Highlight Layer */}
       <div 
-        className="absolute -inset-x-4 -inset-y-4 z-0 rounded-md border border-slate-800/0 transition-all duration-300 lg:-inset-x-6 pointer-events-none group-hover:border-teal-300/30"
+        className="absolute -inset-px z-0 rounded-lg border border-teal-300/30 transition-all duration-300 pointer-events-none opacity-0 group-hover:opacity-100"
         style={{
            maskImage: `radial-gradient(300px circle at var(--mouse-x) var(--mouse-y), black, transparent)`,
            WebkitMaskImage: `radial-gradient(300px circle at var(--mouse-x) var(--mouse-y), black, transparent)`,

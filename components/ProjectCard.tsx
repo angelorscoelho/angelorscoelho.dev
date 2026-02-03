@@ -18,10 +18,9 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     >
       {/* 
          Background Layer: 
-         - Default: Transparent
-         - Hover: High opacity dark slate (slate-900 at 95% opacity) to block the PCB background for readability.
+         - Now always visible with high opacity to ensure readability against code background.
       */}
-      <div className="absolute -inset-x-4 -inset-y-4 z-0 hidden rounded-md transition-all motion-reduce:transition-none lg:-inset-x-6 lg:block lg:group-hover:bg-slate-900/95 lg:group-hover:shadow-[inset_0_1px_0_0_rgba(148,163,184,0.1)] lg:group-hover:drop-shadow-lg"></div>
+      <div className="absolute -inset-x-4 -inset-y-4 z-0 rounded-md transition-all motion-reduce:transition-none lg:-inset-x-6 bg-slate-900/90 border border-slate-800/50 shadow-sm group-hover:bg-slate-900 group-hover:shadow-[inset_0_1px_0_0_rgba(148,163,184,0.1)] group-hover:drop-shadow-lg"></div>
 
       {/* Spotlight Background Layer */}
       <div 

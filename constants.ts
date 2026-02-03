@@ -4,7 +4,7 @@ export const RESUME: ResumeData = {
   name: "Ângelo Coelho",
   title: "Software Engineer",
   tagline: "Building scalable software solutions & optimizing development workflows.",
-  about: "I’m a Backend Software Engineer with 7+ years of experience developing software solutions for industrial and enterprise environments. specialized in high-performance APIs, event-driven architectures, and production monitoring tools. I have a proven ability to deliver measurable business impact through technical excellence and cross-functional collaboration. \n\nI have completed the AWS Cloud Solutions Architect specialization and I am applying cloud-native principles to my projects. I use AI-assisted tools daily to accelerate development and I am currently specializing in AI Agents and Workflows to optimize software lifecycles.",
+  about: "I’m a Software Engineer with 7+ years of experience delivering end-to-end solutions, from custom UI/UX workflows to high-performance backends. specialized in industrial and enterprise environments, I have a proven track record in architecting event-driven systems and production monitoring tools. \n\nI am currently specializing in AI Agents and Agentic Workflows to optimize software lifecycles and standardizing deployment processes through advanced CI/CD automation.",
   email: "angelorscoelho@gmail.com",
   phone: "+351 915 479 201",
   location: "Braga, Portugal",
@@ -19,28 +19,28 @@ export const RESUME: ResumeData = {
       role: "Software Engineer",
       period: "Feb 2022 – Present",
       location: "Braga, Portugal",
-      description: "Developing production software tools for industrial systems.",
+      description: "Driving technical excellence and process optimization within industrial software environments.",
       achievements: [
-        "Developing and maintaining production software tools for industrial systems using PHP, Laravel, Vue.js, and Solace PubSub+, serving hundreds of daily users.",
-        "Spearheading the CI/CD modernization strategy by implementing GitHub Actions for automated deployments and testing (Playwright for frontend, PHPUnit for backend).",
-        "Orchestrated the migration of legacy repositories to GitHub, developing custom Bash scripts for automated code transfer and configuring self-hosted runners for production environments.",
-        "Built automation applications for low-latency event-driven communication and real-time production monitoring.",
-        "Implemented Azure SSO for secure access across multiple production systems.",
-        "Led LEAN initiatives, automating workflows and reducing overhead by 20+ hours/month.",
-        "Championed AI-assisted development practices using GitHub Copilot, training team members and accelerating feature delivery."
+        "Driven by a visionary approach to optimization and process maturity, I was appointed as the LEAN Champion to lead the analysis and revision of work routines, implementing automation and documentation strategies that redefined team efficiency.",
+        "Developing web application software for a high volume of industrial users, including custom front-end UI components for management boards and specialized Ishikawa (Fishbone) problem-solving tools.",
+        "Proactively developing and implementing CI/CD infrastructure, migrating legacy repositories to GitHub to use the Actions and uniformizing deployment scripts/triggers.",
+        "Developing automated testing pipelines using Playwright (frontend) and PHPUnit (backend) to replace manual, inconsistent staging and deployment mechanisms.",
+        "Maintaining production software tools using PHP, Laravel, and Vue.js, ensuring reliable performance for hundreds of daily industrial users.",
+        "Architected automation applications for low-latency event-driven communication using Solace PubSub+ and real-time production monitoring.",
+        "Implemented Azure SSO for secure access and championed AI-assisted development practices with GitHub Copilot."
       ],
-      skills: ["PHP", "Laravel", "Vue.js", "GitHub Actions", "Bash", "Playwright", "PHPUnit", "Solace"]
+      skills: ["CI/CD", "LEAN Methodology", "GitHub Actions", "PHP", "Laravel", "Vue.js", "Playwright", "PHPUnit", "Solace", "Bash"]
     },
     {
       company: "Eticadata Software (CEGID)",
       role: "Software Engineer",
       period: "Nov 2018 – Jan 2022",
       location: "Braga, Portugal",
-      description: "Designed enterprise ERP and accounting systems.",
+      description: "Designed enterprise ERP and accounting systems handling high-volume daily requests.",
       achievements: [
+        "Developed bespoke UI components and custom user workflows with TypeScript and KnockoutJS, improving UX for enterprise clients by 40%.",
         "Designed databases for enterprise ERP, accounting, and hospitality systems serving 500+ clients.",
         "Built RESTful APIs using .NET 7 and ASP.NET Core handling 100K+ daily requests with 99.8% uptime.",
-        "Developed UI components with TypeScript and KnockoutJS, improving user experience by 40%.",
         "Implemented Selenium testing and web scraping strategies covering 200+ scenarios, reducing QA time by 30%.",
         "Managed 60+ web pages serving 10K+ concurrent users with consistent performance."
       ],
@@ -49,21 +49,10 @@ export const RESUME: ResumeData = {
   ],
   projects: [
     {
-      title: "Previous Portfolio",
-      description: "My previous personal website showcasing earlier web development projects and experiments.",
-      technologies: ["HTML", "CSS", "JavaScript"],
-      link: "https://angelorscoelho.github.io/",
-      github: "https://github.com/angelorscoelho/angelorscoelho.github.io"
-    },
-    {
-      title: "Industrial KPI Dashboard",
-      description: "A real-time dashboard for monitoring production line efficiency, reducing downtime by providing instant alerts to shift managers. (Based on Bosch experience)",
-      technologies: ["Vue.js", "Laravel", "WebSockets"],
-    },
-    {
-      title: "ERP API Connector",
-      description: "A robust middleware solution connecting legacy accounting software with modern RESTful endpoints, enabling 3rd party integrations. (Based on Eticadata experience)",
-      technologies: [".NET Core", "SQL Server", "REST API"],
+      title: "StackOverflow Code Identifier",
+      description: "Untagged code identifier for StackOverflow posts. Uses REGEX with C/FLEX and Python3 to identify code snippets missing <code> tags. Recognizes C/Java, Python, Bash, and PHP while handling complex body content extraction.",
+      technologies: ["C", "Flex", "Python 3", "Regex"],
+      github: "https://github.com/angelorscoelho/stackoverflow-code-identifier"
     }
   ],
   education: [
@@ -76,14 +65,14 @@ export const RESUME: ResumeData = {
   ],
   certifications: [
     { 
-      name: "AWS Cloud Solutions Architect Specialization", 
-      issuer: "Coursera", 
-      year: "2024",
+      name: "Building AI Agents and Agentic Workflows Specialization", 
+      issuer: "DeepLearning.AI", 
+      year: "Ongoing",
       url: "https://www.linkedin.com/in/angelorscoelho/details/certifications/"
     },
     { 
-      name: "Jenkins: From Zero to Hero", 
-      issuer: "LearnKartS", 
+      name: "AWS Cloud Solutions Architect Specialization", 
+      issuer: "Coursera", 
       year: "2025",
       url: "https://www.linkedin.com/in/angelorscoelho/details/certifications/"
     },
@@ -94,9 +83,15 @@ export const RESUME: ResumeData = {
       url: "https://www.linkedin.com/in/angelorscoelho/details/certifications/"
     },
     { 
-      name: "ML with Python", 
-      issuer: "Coursera", 
-      year: "2023",
+      name: "Jenkins: From Zero to Hero", 
+      issuer: "LearnKartS", 
+      year: "2025",
+      url: "https://www.linkedin.com/in/angelorscoelho/details/certifications/"
+    },
+    { 
+      name: "Machine Learning Specialization", 
+      issuer: "Stanford / DeepLearning.AI", 
+      year: "2024",
       url: "https://www.linkedin.com/in/angelorscoelho/details/certifications/"
     }
   ],
@@ -104,23 +99,23 @@ export const RESUME: ResumeData = {
     languages: ["PHP", "C#", "Python", "Bash", "JavaScript", "TypeScript", "SQL"],
     frameworks: ["Laravel", ".NET 7", "Vue.js", "Node.js", "PHPUnit", "Playwright"],
     databases: ["SQL Server", "PostgreSQL", "MariaDB", "MySQL", "Redis"],
-    devops: ["AWS", "GitHub Actions", "Docker", "Jenkins", "Git", "CI/CD"],
-    key: ["REST APIs", "Event-Driven Systems", "Microservices", "Migration Strategies", "AI-Assisted Dev", "LEAN Methodology"],
-    learning: ["AI Agents & Workflows", "Advanced Cloud Architecture"]
+    devops: ["GitHub Actions", "AWS", "Docker", "Jenkins", "Git", "CI/CD"],
+    key: ["LEAN Initiative", "CI/CD Infrastructure", "Full Stack (UI/UX Workflows)", "Backend Architecture", "AI Agents"],
+    learning: ["Advanced Agentic Workflows", "AWS Cloud Architecture"]
   }
 };
 
 export const SYSTEM_INSTRUCTION = `
-You are an AI assistant representing Ângelo Coelho. You are embedded in his portfolio website.
-Your goal is to answer questions about his experience, skills, and background professionally and concisely.
+You are an AI assistant representing Ângelo Coelho. 
+Your goal is to answer questions about his experience, skills, and background professionally.
 
-Here is Ângelo's Resume Context:
-${JSON.stringify(RESUME, null, 2)}
+Context about Ângelo:
+1. He is a Software Engineer with a Full Stack history, having developed everything from end-to-end UI/UX workflows to high-performance backends.
+2. He currently works at Bosch where his proactive vision for optimization led to him being chosen as the LEAN Champion. He analyzes work methods and implements automation to optimize team routines.
+3. He is currently leading a major CI/CD infrastructure migration to GitHub to use the Actions and uniformizing deployment scripts.
+4. He has developed specialized front-end components like industrial management boards and Ishikawa (Fishbone) problem-solving tools.
+5. He is highly proactive in learning, currently specializing in AI Agents (DeepLearning.AI) and AWS Cloud Solutions (2025).
+6. His background includes 7 years of professional experience, handling enterprise-scale APIs and industrial production systems.
 
-Key behaviors:
-1. Speak in the first person (as if you are his digital twin) or third person (as an assistant), but be consistent.
-2. Emphasize his solid background in backend engineering (7+ years).
-3. Highlight that he has COMPLETED the AWS Cloud Solutions Architect specialization.
-4. Highlight that he uses AI tools daily and is currently studying AI Agents.
-5. If asked about contact info, provide his email or mention the LinkedIn link.
+Maintain a professional, helpful assistant tone. Use the first person or third person as appropriate for an assistant.
 `;

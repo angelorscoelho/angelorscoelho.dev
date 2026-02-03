@@ -6,18 +6,31 @@ import { MarkdownRenderer } from './MarkdownRenderer';
 
 const SUGGESTED_QUESTIONS = [
   "What would you add to my team?",
-  "Tell me about your AI experience.",
+  "Tell me about your background.",
   "What is your tech stack?"
+];
+
+const TEASER_MESSAGES = [
+  "Hi there! I'm Ângelo's AI assistant. 👋",
+  "Ask me anything about his experience and skills.",
+  "I can summarize Ângelo's technical projects for you.",
+  "Curious about my Lean Champion role? Just ask!",
+  "Ask me about his current focus in AI and AWS."
 ];
 
 export const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', text: "Hi! I'm Ângelo's AI assistant. Ask me anything about his experience, skills, or how he can contribute to your team." }
+    { role: 'model', text: "Hi! I'm Ângelo's AI assistant. Ask me anything about his experience and skills." }
   ]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showPrompt, setShowPrompt] = useState(true);
+  
+  // Teaser State
+  const [teaserIndex, setTeaserIndex] = useState(0);
+  const [showTeaser, setShowTeaser] = useState(false);
+  const [isHoveringButton, setIsHoveringButton] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -28,12 +41,34 @@ export const ChatBot: React.FC = () => {
     scrollToBottom();
   }, [messages, isOpen]);
 
-  // Dismiss the floating prompt after interaction
+  // Cycle Teaser Messages
   useEffect(() => {
     if (isOpen) {
-      setShowPrompt(false);
+      setShowTeaser(false);
+      return;
     }
-  }, [isOpen]);
+
+    // Initial delay
+    const initialDelay = setTimeout(() => {
+      setShowTeaser(true);
+    }, 2000);
+
+    // Rotation timer
+    const interval = setInterval(() => {
+      if (!isHoveringButton) {
+        setShowTeaser(false);
+        setTimeout(() => {
+          setTeaserIndex((prev) => (prev + 1) % TEASER_MESSAGES.length);
+          if (!isOpen) setShowTeaser(true);
+        }, 500); // Wait for fade out transition
+      }
+    }, 8000); // Rotate every 8 seconds
+
+    return () => {
+      clearTimeout(initialDelay);
+      clearInterval(interval);
+    };
+  }, [isOpen, isHoveringButton]);
 
   const handleSendMessage = async (text: string = inputText) => {
     if (!text.trim() || isLoading) return;
@@ -58,7 +93,7 @@ export const ChatBot: React.FC = () => {
       {/* Make children clickable */}
       <div className="pointer-events-auto flex flex-col items-end">
         
-        {/* Chat Window */}
+        {/* Chat Window - In flow, pushes up if needed */}
         {isOpen && (
           <div className="mb-4 w-[90vw] md:w-96 h-[500px] max-h-[70vh] bg-slate-800 border border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-fade-in-up ring-1 ring-white/10">
             {/* Header */}
@@ -149,41 +184,51 @@ export const ChatBot: React.FC = () => {
           </div>
         )}
 
-        {/* Floating Attention Bubble */}
-        {!isOpen && showPrompt && (
-          <div className="mb-4 mr-2 relative animate-bounce-gentle">
-             <div className="bg-slate-200 text-slate-900 text-xs font-bold px-3 py-2 rounded-lg rounded-br-none shadow-lg">
-                Ask about my experience!
-             </div>
-             {/* Triangle pointer */}
-             <div className="absolute -bottom-1 right-0 w-0 h-0 border-l-[8px] border-l-transparent border-t-[8px] border-t-slate-200"></div>
-          </div>
-        )}
+        {/* Wrapper for Button and Teaser - Keeps Teaser out of flex flow */}
+        <div className="relative">
+            {/* Floating Teaser Bubble - Absolute Positioned */}
+            <div 
+              className={`absolute bottom-full right-0 mb-4 transition-all duration-500 ease-out transform ${
+                showTeaser && !isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+              }`}
+            >
+               <div className="bg-slate-800 border border-slate-700 text-slate-200 text-xs font-medium px-4 py-3 rounded-2xl shadow-xl min-w-[280px] max-w-[360px] w-max leading-relaxed relative whitespace-normal">
+                  {TEASER_MESSAGES[teaserIndex]}
+               </div>
+               {/* Triangle pointer */}
+               <div className="absolute -bottom-2 right-5 w-0 h-0 border-l-[8px] border-l-transparent border-t-[8px] border-t-slate-700 border-r-[8px] border-r-transparent"></div>
+               {/* Inner triangle for border illusion */}
+               <div className="absolute -bottom-[7px] right-5 w-0 h-0 border-l-[8px] border-l-transparent border-t-[8px] border-t-slate-800 border-r-[8px] border-r-transparent"></div>
+            </div>
 
-        {/* Toggle Button */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={`group relative flex h-14 w-14 items-center justify-center rounded-full bg-teal-300 text-slate-900 shadow-[0_0_20px_rgba(45,212,191,0.5)] transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-teal-300 focus:ring-offset-2 focus:ring-offset-slate-900 ${!isOpen ? 'animate-pulse-slow' : ''}`}
-          aria-label="Toggle Chat"
-        >
-          {isOpen ? <CloseIcon className="w-6 h-6" /> : <ChatIcon className="w-6 h-6" />}
-        </button>
+            {/* Toggle Button */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              onMouseEnter={() => setIsHoveringButton(true)}
+              onMouseLeave={() => setIsHoveringButton(false)}
+              className={`group relative flex h-14 w-14 items-center justify-center rounded-full bg-teal-300 text-slate-900 shadow-[0_0_20px_rgba(45,212,191,0.3)] transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-teal-300 focus:ring-offset-2 focus:ring-offset-slate-900 z-50`}
+              aria-label="Toggle Chat"
+            >
+              {isOpen ? <CloseIcon className="w-6 h-6" /> : <ChatIcon className="w-6 h-6" />}
+              
+              {/* Unread Indicator Dot */}
+              {!isOpen && showTeaser && (
+                <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-teal-500"></span>
+                </span>
+              )}
+            </button>
+        </div>
       </div>
 
       <style>{`
-        @keyframes bounce-gentle {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.3s ease-out forwards;
         }
-        @keyframes pulse-slow {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.4); }
-          70% { box-shadow: 0 0 0 10px rgba(45, 212, 191, 0); }
-        }
-        .animate-bounce-gentle {
-          animation: bounce-gentle 2s infinite ease-in-out;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 3s infinite;
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>
