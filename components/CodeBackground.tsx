@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { SQL_SNIPPETS, CSHARP_SNIPPETS, TS_SNIPPETS } from '../utils/codeSnippets';
 
@@ -6,9 +7,8 @@ const FONT_SIZE = 10;
 const LINE_HEIGHT = 1.6;
 const FONT_FAMILY = '"Fira Code", "Consolas", "Monaco", monospace';
 
-// Speed calibration: 0.3 tokens per frame -> Slower (approx 30s for full screen)
+// Speed calibration: 0.3 tokens per frame
 const SPEED = 0.3; 
-// Reduced opacity from 0.2 to 0.1 for a more faded look
 const OPACITY_TEXT = 0.1; 
 
 const COLORS = {
@@ -43,35 +43,23 @@ type ColumnState = {
 // --- TOKENIZER ---
 const tokenize = (code: string): Token[] => {
   const tokens: Token[] = [];
-  
   const keywords = [
     'WITH', 'SELECT', 'FROM', 'WHERE', 'GROUP', 'BY', 'ORDER', 'DESC', 'AS', 'SUM', 'COUNT', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'JOIN', 'LEFT', 'RIGHT', 'INNER', 'OUTER', 'ON', 'AND', 'OR', 'IS', 'NOT', 'NULL', 'TOP', 'DISTINCT', 'OVER', 'PARTITION', 'LAG', 'FORMAT', 'INSERT', 'UPDATE', 'DELETE', 'CAST', 'DATE_TRUNC', 'AVG', 'HAVING', 'MAX', 'MIN',
     'using', 'namespace', 'public', 'private', 'protected', 'class', 'void', 'string', 'int', 'bool', 'var', 'new', 'return', 'if', 'else', 'try', 'catch', 'throw', 'async', 'await', 'Task', 'interface', 'readonly', 'static', 'get', 'set', 'typeof',
     'import', 'from', 'export', 'default', 'const', 'let', 'function', 'return', 'null', 'undefined', 'true', 'false', 'type', 'interface', 'implements', 'extends', 'constructor'
   ].join('|');
 
-  // Regex Breakdown:
-  // 1. Comments
-  // 2. Strings
-  // 3. Keywords
-  // 4. Newlines (explicit capture to handle line breaks separately from indentation)
-  // 5. Types (PascalCase)
-  // 6. Properties/Methods (.something)
-  // 7. Numbers
-  // 8. Punctuation
-  // 9. Whitespace (Spaces/Tabs only, for indentation)
-  // 10. Identifiers
   const regex = new RegExp(
-    `(\\/\\/.*$|--.*$|\\/\\*[\\s\\S]*?\\*\\/)` + // Comments (Group 1)
-    `|(".*?"|'.*?'|\`.*?\`)` +            // Strings (Group 2)
-    `|(\\b(${keywords})\\b)` +            // Keywords (Group 3)
-    `|(\\r?\\n)` +                        // Newlines (Group 5 - Explicit)
-    `|(\\b[A-Z][a-zA-Z0-9_]*\\b)` +       // Types/Classes (Group 6)
-    `|(\\.[a-zA-Z0-9_]+)` +               // Methods/Properties (Group 7)
-    `|(\\d+(\\.\\d+)?)` +                 // Numbers (Group 8)
-    `|([{}()\\[\\].<>,:;?])` +            // Punctuation (Group 10)
-    `|([ \\t]+)` +                        // Indentation/Spaces (Group 11)
-    `|([a-z][a-zA-Z0-9_]*)`,              // Identifiers (Group 12)
+    `(\\/\\/.*$|--.*$|\\/\\*[\\s\\S]*?\\*\\/)` + // Comments
+    `|(".*?"|'.*?'|\`.*?\`)` +            // Strings
+    `|(\\b(${keywords})\\b)` +            // Keywords
+    `|(\\r?\\n)` +                        // Newlines
+    `|(\\b[A-Z][a-zA-Z0-9_]*\\b)` +       // Types/Classes
+    `|(\\.[a-zA-Z0-9_]+)` +               // Methods/Properties
+    `|(\\d+(\\.\\d+)?)` +                 // Numbers
+    `|([{}()\\[\\].<>,:;?])` +            // Punctuation
+    `|([ \\t]+)` +                        // Indentation/Spaces
+    `|([a-z][a-zA-Z0-9_]*)`,              // Identifiers
     'gm'
   );
 
@@ -79,18 +67,15 @@ const tokenize = (code: string): Token[] => {
   while ((match = regex.exec(code)) !== null) {
     const text = match[0];
     let color = COLORS.DEFAULT;
-    
-    // Assign colors based on groups
     if (match[1]) color = COLORS.COMMENT;
     else if (match[2]) color = COLORS.STRING;
     else if (match[3]) color = COLORS.KEYWORD;
-    else if (match[5]) { tokens.push({ text: '\n', color: COLORS.DEFAULT }); continue; } // Handle Newline
+    else if (match[5]) { tokens.push({ text: '\n', color: COLORS.DEFAULT }); continue; }
     else if (match[6]) color = COLORS.TYPE;
     else if (match[7]) color = COLORS.FUNCTION; 
     else if (match[8]) color = COLORS.NUMBER;
     else if (match[10]) color = COLORS.OPERATOR;
-    else if (match[11]) { tokens.push({ text, color: COLORS.DEFAULT }); continue; } // Handle Spaces
-    
+    else if (match[11]) { tokens.push({ text, color: COLORS.DEFAULT }); continue; }
     tokens.push({ text, color });
   }
   return tokens;
@@ -99,16 +84,10 @@ const tokenize = (code: string): Token[] => {
 export const CodeBackground = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
-  // Input State
   const mouseRef = useRef({ x: -1, y: -1 });
   const isMobileRef = useRef(false);
-  const mobileStartedRef = useRef(false);
-
-  // Layout State
   const columnsRef = useRef<ColumnState[]>([]);
 
-  // 1. LAYOUT ENGINE
   const calculateColumnLayout = (
     ctx: CanvasRenderingContext2D, 
     snippets: string[], 
@@ -119,58 +98,35 @@ export const CodeBackground = () => {
     const layouts: LayoutItem[] = [];
     let currentY = 20; 
     const effectiveWidth = width - 30;
-
     const fullQueue = [...snippets, ...snippets, ...snippets, ...snippets];
 
     fullQueue.forEach((code) => {
       const tokens = tokenize(code);
       let currentX = xStart;
-      
       tokens.forEach((token) => {
-        // Handle Newlines explicitly
         if (token.text === '\n') {
           currentY += FONT_SIZE * LINE_HEIGHT;
           currentX = xStart;
           return;
         }
-
         const w = ctx.measureText(token.text).width;
-        
-        // Wrap text if needed (rare for code background but safe to have)
         if (currentX + w > xStart + effectiveWidth) {
            currentY += FONT_SIZE * LINE_HEIGHT;
            currentX = xStart;
         }
-
-        layouts.push({
-           token,
-           x: currentX,
-           y: currentY,
-           colIndex
-        });
-
+        layouts.push({ token, x: currentX, y: currentY, colIndex });
         currentX += w;
       });
-
-      // Gap between snippets
       currentY += (FONT_SIZE * LINE_HEIGHT) * 3;
     });
 
-    return {
-      layouts,
-      totalHeight: currentY,
-      progress: 0,
-      scrollY: 0,
-      isHovered: false
-    };
+    return { layouts, totalHeight: currentY, progress: 0, scrollY: 0, isHovered: false };
   };
 
-  // 2. INIT & RESIZE
   useEffect(() => {
     const handleResize = () => {
       if (!containerRef.current || !canvasRef.current) return;
       const { clientWidth, clientHeight } = containerRef.current;
-      
       const dpr = window.devicePixelRatio || 1;
       canvasRef.current.width = clientWidth * dpr;
       canvasRef.current.height = clientHeight * dpr;
@@ -181,14 +137,11 @@ export const CodeBackground = () => {
       if (ctx) {
         ctx.scale(dpr, dpr);
         ctx.font = `${FONT_SIZE}px ${FONT_FAMILY}`;
-        
         const isMobile = clientWidth < 768;
         isMobileRef.current = isMobile;
 
         if (isMobile) {
-            columnsRef.current = [
-                calculateColumnLayout(ctx, TS_SNIPPETS, 15, clientWidth, 0)
-            ];
+            columnsRef.current = [calculateColumnLayout(ctx, TS_SNIPPETS, 15, clientWidth, 0)];
         } else {
             const colW = clientWidth / 3;
             columnsRef.current = [
@@ -199,51 +152,30 @@ export const CodeBackground = () => {
         }
       }
     };
-
     handleResize();
     const t = setTimeout(handleResize, 100);
     window.addEventListener('resize', handleResize);
-    return () => {
-        clearTimeout(t);
-        window.removeEventListener('resize', handleResize);
-    }
+    return () => { clearTimeout(t); window.removeEventListener('resize', handleResize); }
   }, []);
 
-  // 3. INPUT HANDLERS
   useEffect(() => {
     const handleMove = (e: MouseEvent | TouchEvent) => {
-      if (isMobileRef.current && !mobileStartedRef.current) {
-        mobileStartedRef.current = true;
-      }
       if (!isMobileRef.current && containerRef.current) {
         let clientX = 0;
-        if ('touches' in e) {
-           clientX = e.touches[0].clientX;
-        } else {
-           clientX = (e as MouseEvent).clientX;
-        }
+        if ('touches' in e) { clientX = e.touches[0].clientX; } else { clientX = (e as MouseEvent).clientX; }
         mouseRef.current.x = clientX;
       }
     };
-
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('touchstart', handleMove);
-    window.addEventListener('scroll', () => {
-        if (isMobileRef.current && !mobileStartedRef.current) {
-            mobileStartedRef.current = true;
-        }
-    });
-
     return () => {
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('touchstart', handleMove);
     };
   }, []);
 
-  // 4. ANIMATION LOOP
   useEffect(() => {
     let frameId: number;
-
     const animate = () => {
       const canvas = canvasRef.current;
       const ctx = canvas?.getContext('2d');
@@ -251,25 +183,23 @@ export const CodeBackground = () => {
         frameId = requestAnimationFrame(animate);
         return;
       }
-
       const width = containerRef.current.clientWidth;
       const height = containerRef.current.clientHeight;
 
       if (isMobileRef.current) {
-         if (mobileStartedRef.current && columnsRef.current[0]) {
-             columnsRef.current[0].progress += SPEED;
-         }
+          // Mobile always scrolls
+          columnsRef.current.forEach(col => col.progress += SPEED);
       } else {
          const mx = mouseRef.current.x;
          const colW = width / 3;
-         
          columnsRef.current.forEach((col, idx) => {
              const xMin = idx * colW;
              const xMax = (idx + 1) * colW;
+             // Logic Reversed: If hovered, do NOT increment progress (hold)
              if (mx >= xMin && mx < xMax) {
-                 col.progress += SPEED;
                  col.isHovered = true;
              } else {
+                 col.progress += SPEED;
                  col.isHovered = false;
              }
          });
@@ -281,7 +211,6 @@ export const CodeBackground = () => {
 
       columnsRef.current.forEach(col => {
           const visibleLimit = Math.floor(col.progress);
-          
           if (visibleLimit < col.layouts.length && visibleLimit > 0) {
               const lastToken = col.layouts[visibleLimit - 1];
               const targetY = lastToken.y;
@@ -289,7 +218,6 @@ export const CodeBackground = () => {
                   col.scrollY += (targetY - col.scrollY - (height - 60)) * 0.1; 
               }
           }
-
           if (visibleLimit >= col.layouts.length) {
               col.progress = 0;
               col.scrollY = 0;
@@ -297,21 +225,17 @@ export const CodeBackground = () => {
 
           ctx.save();
           ctx.translate(0, -col.scrollY);
-
           const viewportTop = col.scrollY;
           const viewportBottom = col.scrollY + height;
-          
           ctx.globalAlpha = OPACITY_TEXT;
 
           for (let i = 0; i < Math.min(visibleLimit, col.layouts.length); i++) {
               const item = col.layouts[i];
               if (item.y + FONT_SIZE < viewportTop) continue;
               if (item.y > viewportBottom) break;
-
               ctx.fillStyle = item.token.color;
               ctx.fillText(item.token.text, item.x, item.y);
           }
-
           if (visibleLimit < col.layouts.length) {
               const cursorItem = col.layouts[visibleLimit];
               if (cursorItem) {
@@ -324,27 +248,17 @@ export const CodeBackground = () => {
                   }
               }
           }
-
           ctx.restore();
       });
-
       frameId = requestAnimationFrame(animate);
     };
-
     frameId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frameId);
   }, []);
 
   return (
-    <div 
-      ref={containerRef} 
-      className="fixed inset-0 z-0 pointer-events-none bg-slate-900"
-      aria-hidden="true"
-    >
-      <canvas 
-        ref={canvasRef}
-        className="block w-full h-full"
-      />
+    <div ref={containerRef} className="fixed inset-0 z-0 pointer-events-none bg-slate-900" aria-hidden="true">
+      <canvas ref={canvasRef} className="block w-full h-full" />
     </div>
   );
 };
