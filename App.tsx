@@ -7,6 +7,8 @@ import { CodeBackground } from './components/CodeBackground';
 import { SpotlightCard } from './components/SpotlightCard';
 import { CertificationCard } from './components/CertificationCard';
 import { GitHubIcon, LinkedInIcon, ExternalLinkIcon, EmailIcon, FileTextIcon } from './components/Icon';
+import profilePhoto from './assets/profile_photo.png';
+import resume from './assets/resume.pdf';
 
 function App() {
   const [activeSection, setActiveSection] = useState<string>('about');
@@ -49,13 +51,12 @@ function App() {
             <div>
               <div className="mb-8 block">
                 {/* 
-                  NOTE: In Vite, assets in the 'public' folder are served at the root path '/'.
-                  Do not use './' or 'public/'. 
-                  Ensure 'profile_photo.png' is physically located in the 'public' folder.
+                  NOTE: Assets are now imported from src/assets/ folder.
+                  The import provides the correct path for both development and production builds.
                 */}
                 <div className="h-44 w-44 relative overflow-hidden rounded-full border-4 border-slate-800 shadow-2xl group">
                     <img 
-                      src="/profile_photo.png" 
+                      src={profilePhoto}
                       alt={RESUME.name} 
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
@@ -95,11 +96,10 @@ function App() {
             <ul className="ml-1 mt-8 flex items-center" aria-label="Social media and resume">
               <li className="mr-5">
                 {/* 
-                  NOTE: We use '/resume.pdf' to target the public folder directly.
-                  Using './' would break on nested routes or cause the "Blank PDF" issue
-                  where the app renders HTML instead of serving the file.
+                  NOTE: Resume PDF is now imported from src/assets/.
+                  This ensures the correct path is used in both development and production.
                 */}
-                <a className="block hover:text-teal-300 transition-colors" href="/resume.pdf" target="_blank" rel="noreferrer" title="View Résumé">
+                <a className="block hover:text-teal-300 transition-colors" href={resume} target="_blank" rel="noreferrer" title="View Résumé">
                   <span className="sr-only">Résumé</span>
                   <FileTextIcon className="h-6 w-6" />
                 </a>
@@ -158,7 +158,7 @@ function App() {
                   ))}
                 </ol>
                 <div className="mt-12">
-                  <a className="inline-flex items-baseline font-medium leading-tight text-slate-200 hover:text-teal-300 focus-visible:text-teal-300 group/link text-base font-semibold" href="/resume.pdf" target="_blank" rel="noreferrer">
+                  <a className="inline-flex items-baseline font-medium leading-tight text-slate-200 hover:text-teal-300 focus-visible:text-teal-300 group/link text-base font-semibold" href={resume} target="_blank" rel="noreferrer">
                     <span>View Full Résumé <span className="inline-block"><ExternalLinkIcon className="ml-1 inline-block h-4 w-4 shrink-0 transition-transform group-hover/link:-translate-y-1 group-hover/link:translate-x-1" /></span></span>
                   </a>
                 </div>
