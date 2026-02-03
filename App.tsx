@@ -41,11 +41,11 @@ function App() {
       
       <CodeBackground />
 
-      <div className="mx-auto max-w-screen-lg px-6 py-12 font-sans md:px-12 md:py-20 lg:px-24 lg:py-0 relative z-40">
-        <div className="lg:flex lg:justify-between lg:gap-4">
+      <div className="mx-auto max-w-screen-xl px-6 py-12 font-sans md:px-12 md:py-20 lg:px-24 lg:py-0 relative z-40">
+        <div className="lg:flex lg:justify-between lg:gap-12">
           
           {/* LEFT COLUMN: Sidebar */}
-          <header className="lg:sticky lg:top-0 lg:flex lg:max-h-screen lg:w-[35%] lg:flex-col lg:justify-between lg:py-24">
+          <header className="lg:sticky lg:top-0 lg:flex lg:max-h-screen lg:w-[30%] lg:flex-col lg:justify-between lg:py-24">
             <div>
               <div className="mb-8 block">
                 <div className="h-44 w-44 relative overflow-hidden rounded-full border-4 border-slate-800 shadow-2xl group">
@@ -116,7 +116,7 @@ function App() {
           </header>
 
           {/* RIGHT COLUMN: Content */}
-          <main id="content" className="pt-24 lg:w-[52%] lg:py-24">
+          <main id="content" className="pt-24 lg:w-[60%] lg:py-24">
             
             <section id="about" className="mb-16 scroll-mt-16 md:mb-24 lg:mb-36 lg:scroll-mt-24">
               <div className="sticky top-0 z-20 -mx-6 mb-4 w-screen bg-slate-900/75 px-6 py-5 backdrop-blur md:-mx-12 md:px-12 lg:sr-only lg:relative lg:top-auto lg:mx-auto lg:w-full lg:px-0 lg:py-0 lg:opacity-0">
