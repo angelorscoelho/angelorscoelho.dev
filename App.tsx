@@ -45,9 +45,14 @@ function App() {
         <div className="lg:flex lg:justify-between lg:gap-12">
           
           {/* LEFT COLUMN: Sidebar */}
-          <header className="lg:sticky lg:top-0 lg:flex lg:max-h-screen lg:w-[30%] lg:flex-col lg:justify-between lg:py-24">
+          <header className="lg:sticky lg:top-0 lg:flex lg:max-h-screen lg:w-[35%] lg:flex-col lg:justify-between lg:py-24">
             <div>
               <div className="mb-8 block">
+                {/* 
+                  NOTE: In Vite, assets in the 'public' folder are served at the root path '/'.
+                  Do not use './' or 'public/'. 
+                  Ensure 'profile_photo.png' is physically located in the 'public' folder.
+                */}
                 <div className="h-44 w-44 relative overflow-hidden rounded-full border-4 border-slate-800 shadow-2xl group">
                     <img 
                       src="/profile_photo.png" 
@@ -89,6 +94,11 @@ function App() {
 
             <ul className="ml-1 mt-8 flex items-center" aria-label="Social media and resume">
               <li className="mr-5">
+                {/* 
+                  NOTE: We use '/resume.pdf' to target the public folder directly.
+                  Using './' would break on nested routes or cause the "Blank PDF" issue
+                  where the app renders HTML instead of serving the file.
+                */}
                 <a className="block hover:text-teal-300 transition-colors" href="/resume.pdf" target="_blank" rel="noreferrer" title="View Résumé">
                   <span className="sr-only">Résumé</span>
                   <FileTextIcon className="h-6 w-6" />
