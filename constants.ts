@@ -4,7 +4,7 @@ export const RESUME: ResumeData = {
   name: "Ângelo Coelho",
   title: "Software Engineer",
   tagline: "Building scalable software solutions & optimizing development workflows.",
-  about: "I’m a Software Engineer with 7+ years of experience delivering end-to-end solutions, from custom UI/UX workflows to high-performance backends. specialized in industrial and enterprise environments, I have a proven track record in architecting event-driven systems and production monitoring tools. \n\nI am currently specializing in AI Agents and Agentic Workflows to optimize software lifecycles and standardizing deployment processes through advanced CI/CD automation.",
+  about: "Software Engineer with 7+ years of experience delivering end-to-end solutions, from complex UI/UX workflows to high-availability backends. I focus on the entire delivery lifecycle, proactively identifying bottlenecks and implementing architectural improvements. My approach combines rigorous engineering with advanced AI-assisted workflows to maximize velocity and code quality without compromising stability.",
   email: "angelorscoelho@gmail.com",
   phone: "+351 915 479 201",
   location: "Braga, Portugal",
@@ -19,32 +19,28 @@ export const RESUME: ResumeData = {
       role: "Software Engineer",
       period: "Feb 2022 – Present",
       location: "Braga, Portugal",
-      description: "Driving technical excellence and process optimization within industrial software environments.",
+      description: "Driving technical excellence and process optimization within enterprise software teams.",
       achievements: [
-        "Driven by a visionary approach to optimization and process maturity, I was appointed as the LEAN Champion to lead the analysis and revision of work routines, implementing automation and documentation strategies that redefined team efficiency.",
-        "Developing web application software for a high volume of industrial users, including custom front-end UI components for management boards and specialized Ishikawa (Fishbone) problem-solving tools.",
-        "Proactively developing and implementing CI/CD infrastructure, migrating legacy repositories to GitHub to use the Actions and uniformizing deployment scripts/triggers.",
-        "Developing automated testing pipelines using Playwright (frontend) and PHPUnit (backend) to replace manual, inconsistent staging and deployment mechanisms.",
-        "Maintaining production software tools using PHP, Laravel, and Vue.js, ensuring reliable performance for hundreds of daily industrial users.",
-        "Architected automation applications for low-latency event-driven communication using Solace PubSub+ and real-time production monitoring.",
-        "Implemented Azure SSO for secure access and championed AI-assisted development practices with GitHub Copilot."
+        "Discussed requirements, architected solutions and implemented new tools and integrations (PHP, Laravel, Vue.js), including event-driven integrations (Solace PubSub+) and Azure SSO to modernize operational tooling.",
+        "Engineered the department's transition to automated delivery, replacing manual staging with standardized CI/CD pipelines (GitHub Actions) and comprehensive testing suites (Playwright, PHPUnit).",
+        "Championed operational efficiency by integrating advanced AI workflows—leveraging MCP servers and context-aware model orchestration for planning, debugging, and documentation—significantly reducing development friction."
       ],
-      skills: ["CI/CD", "LEAN Methodology", "GitHub Actions", "PHP", "Laravel", "Vue.js", "Playwright", "PHPUnit", "Solace", "Bash"]
+      skills: ["CI/CD", "GitHub Actions", "PHP", "Laravel", "Vue.js", "Playwright", "PHPUnit", "Solace", "AI Orchestration"]
     },
     {
       company: "Eticadata Software (CEGID)",
       role: "Software Engineer",
       period: "Nov 2018 – Jan 2022",
       location: "Braga, Portugal",
-      description: "Designed enterprise ERP and accounting systems handling high-volume daily requests.",
+      description: "Worked on enterprise ERP, accounting and hospitality systems serving a broad customer base.",
       achievements: [
-        "Developed bespoke UI components and custom user workflows with TypeScript and KnockoutJS, improving UX for enterprise clients by 40%.",
-        "Designed databases for enterprise ERP, accounting, and hospitality systems serving 500+ clients.",
-        "Built RESTful APIs using .NET 7 and ASP.NET Core handling 100K+ daily requests with 99.8% uptime.",
-        "Implemented Selenium testing and web scraping strategies covering 200+ scenarios, reducing QA time by 30%.",
-        "Managed 60+ web pages serving 10K+ concurrent users with consistent performance."
+        "Managed the full lifecycle of multiple product modules (Accounting, Hotels, Billing), ensuring consistent performance for thousands of active clients.",
+        "Designed and evolved database schemas and RESTful APIs using .NET and ASP.NET Core, supporting high-traffic daily operations.",
+        "Developed bespoke UI components and user workflows using TypeScript, KnockoutJS, and jQuery—balancing the migration of legacy code with the delivery of new market-facing features.",
+        "Implemented Selenium-based automated testing and web scraping strategies, covering dozens of critical user scenarios to validate system integrity.",
+        "Optimized existing SQL queries and backend logic to handle increasing data loads across the ERP suite."
       ],
-      skills: [".NET 7", "ASP.NET Core", "TypeScript", "KnockoutJS", "Selenium", "SQL Server"]
+      skills: ["ASP.NET Core", ".NET", "C#", "TypeScript", "KnockoutJS", "jQuery", "Selenium", "NUnit", "SQL Server"]
     }
   ],
   projects: [
@@ -97,25 +93,24 @@ export const RESUME: ResumeData = {
   ],
   skills: {
     languages: ["PHP", "C#", "Python", "Bash", "JavaScript", "TypeScript", "SQL"],
-    frameworks: ["Laravel", ".NET 7", "Vue.js", "Node.js", "PHPUnit", "Playwright"],
+    frameworks: ["Laravel", ".NET", "Vue.js", "Node.js", "PHPUnit", "Playwright", "KnockoutJS", "jQuery", "NUnit", "xUnit"],
     databases: ["SQL Server", "PostgreSQL", "MariaDB", "MySQL", "Redis"],
     devops: ["GitHub Actions", "AWS", "Docker", "Jenkins", "Git", "CI/CD"],
-    key: ["LEAN Initiative", "CI/CD Infrastructure", "Full Stack (UI/UX Workflows)", "Backend Architecture", "AI Agents"],
-    learning: ["Advanced Agentic Workflows", "AWS Cloud Architecture"]
+    key: ["Process improvements", "CI/CD Infrastructure", "Full Stack (UI/UX Workflows)", "Backend Architecture", "AI-assisted development"],
+    learning: ["Advanced Agentic Workflows", "Model Context Protocol (MCP)", "LLM Orchestration"]
   }
 };
 
 export const SYSTEM_INSTRUCTION = `
-You are an AI assistant representing Ângelo Coelho. 
+You are an AI assistant representing Ângelo Coelho.
 Your goal is to answer questions about his experience, skills, and background professionally.
 
 Context about Ângelo:
 1. He is a Software Engineer with a Full Stack history, having developed everything from end-to-end UI/UX workflows to high-performance backends.
-2. He currently works at Bosch where his proactive vision for optimization led to him being chosen as the LEAN Champion. He analyzes work methods and implements automation to optimize team routines.
-3. He is currently leading a major CI/CD infrastructure migration to GitHub to use the Actions and uniformizing deployment scripts.
-4. He has developed specialized front-end components like industrial management boards and Ishikawa (Fishbone) problem-solving tools.
-5. He is highly proactive in learning, currently specializing in AI Agents (DeepLearning.AI) and AWS Cloud Solutions (2025).
-6. His background includes 7 years of professional experience, handling enterprise-scale APIs and industrial production systems.
+2. He leads process and automation improvements, including advocating and implementing CI/CD migrations and deployment automation to improve team workflows.
+3. He has developed specialized front-end components and operational tooling for production users.
+4. He is proactive in learning, currently exploring AI-assisted development tools (MCP, Agentic Workflows) and AWS Cloud solutions.
+5. His background includes 7 years of professional experience building enterprise-scale APIs and production software.
 
 Maintain a professional, helpful assistant tone. Use the first person or third person as appropriate for an assistant.
 `;
