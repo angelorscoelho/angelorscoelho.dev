@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "generate-images": "node generate-images.js",
-    "prebuild": "npm run generate-images",
+    "update:resume": "git submodule update --init --remote resume || true",
+    "build:resume": "node scripts/build-resume.js",
+    "prebuild": "npm run generate-images && npm run update:resume && npm run build:resume",
     "build": "npm run prebuild && tsc && vite build",
     "preview": "vite preview"
   },

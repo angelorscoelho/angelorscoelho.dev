@@ -1,0 +1,55 @@
+name: Build and push resume PDF
+
+on:
+  workflow_dispatch: {}
+  workflow_call: {}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v4
+
+      - name: Clone resume repository
+        env:
+          RESUME_REPO_PAT: ${{ secrets.RESUME_REPO_PAT }}
+        run: |
+          rm -rf resume || true
+          if [ -z "$RESUME_REPO_PAT" ]; then
+            echo "RESUME_REPO_PAT not set; attempting anonymous clone (read-only)"
+            git clone https://github.com/angelorscoelho/resume.git resume
+          else
+            git clone https://$RESUME_REPO_PAT@github.com/angelorscoelho/resume.git resume
+          fi
+
+      - name: Install TeX toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended texlive-xetex latexmk
+
+      - name: Build resume PDF
+        run: |
+          cd resume
+          if [ -f Makefile ] || [ -f makefile ]; then
+            make
+          else
+            MAIN_TEX=$(ls *.tex 2>/dev/null | head -n1 || true)
+            if [ -n "$MAIN_TEX" ]; then
+              latexmk -pdf -interaction=nonstopmode "$MAIN_TEX"
+            else
+              echo "No .tex file found in resume repo"; exit 1
+            fi
+          fi
+
+      - name: Commit and push generated PDF back to resume repo
+        if: env.RESUME_REPO_PAT != ''
+        env:
+          RESUME_REPO_PAT: ${{ secrets.RESUME_REPO_PAT }}
+        run: |
+          cd resume
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f *.pdf || true
+          git commit -m "CI: update resume.pdf" || echo "no changes to commit"
+          git push https://$RESUME_REPO_PAT@github.com/angelorscoelho/resume.git HEAD:main
