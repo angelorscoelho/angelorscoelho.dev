@@ -1,4 +1,3 @@
-
 {
   "name": "angelo-coelho-portfolio",
   "private": true,
@@ -6,13 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "generate-images": "node generate-images.js",
+    "prebuild": "npm run generate-images",
+    "build": "npm run prebuild && tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@google/genai": "^1.34.0",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/react": "^19.2.3",

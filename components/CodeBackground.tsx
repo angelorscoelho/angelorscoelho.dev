@@ -198,10 +198,12 @@ export const CodeBackground = () => {
              // Logic Reversed: If hovered, do NOT increment progress (hold)
              if (mx >= xMin && mx < xMax) {
                  col.isHovered = true;
-             } else {
-                 col.progress += SPEED;
-                 col.isHovered = false;
              }
+             // ARCHITECTURAL CHANGE: Always increment progress, regardless of hover state
+             
+             // Update hover state but ALWAYS increment progress
+             col.isHovered = (mx >= xMin && mx < xMax);
+             col.progress += SPEED;
          });
       }
 

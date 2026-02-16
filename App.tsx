@@ -7,7 +7,9 @@ import { CodeBackground } from './components/CodeBackground';
 import { SpotlightCard } from './components/SpotlightCard';
 import { CertificationCard } from './components/CertificationCard';
 import { GitHubIcon, LinkedInIcon, ExternalLinkIcon, EmailIcon, FileTextIcon } from './components/Icon';
-import profilePhoto from './src/assets/profile_photo.png';
+import profilePhotoSmall from './src/assets/profile_photo_small.webp';
+import profilePhotoMedium from './src/assets/profile_photo_medium.webp';
+import profilePhotoLarge from './src/assets/profile_photo_large.webp';
 import resume from './src/assets/resume.pdf';
 
 function App() {
@@ -55,9 +57,14 @@ function App() {
                   The import provides the correct path for both development and production builds.
                 */}
                 <div className="h-44 w-44 relative overflow-hidden rounded-full border-4 border-slate-800 shadow-2xl group">
-                    <img 
-                      src={profilePhoto}
-                      alt={RESUME.name} 
+                    <img
+                      src={profilePhotoSmall}
+                      srcSet={`${profilePhotoSmall} 600w, ${profilePhotoMedium} 1200w, ${profilePhotoLarge} 2400w`}
+                      sizes="176px"
+                      alt={RESUME.name}
+                      width={176}
+                      height={176}
+                      fetchPriority="high"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-slate-900/10"></div>
