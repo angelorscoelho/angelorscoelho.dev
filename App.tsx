@@ -6,10 +6,8 @@ import { ChatBot } from './components/ChatBot';
 import { CodeBackground } from './components/CodeBackground';
 import { SpotlightCard } from './components/SpotlightCard';
 import { CertificationCard } from './components/CertificationCard';
+import { ProfileImageModal } from './components/ProfileImageModal';
 import { GitHubIcon, LinkedInIcon, ExternalLinkIcon, EmailIcon, FileTextIcon } from './components/Icon';
-import profilePhotoSmall from './src/assets/profile_photo_small.webp';
-import profilePhotoMedium from './src/assets/profile_photo_medium.webp';
-import profilePhotoLarge from './src/assets/profile_photo_large.webp';
 import resume from './src/assets/resume.pdf';
 
 function App() {
@@ -17,7 +15,7 @@ function App() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['about', 'experience', 'projects'];
+      const sections = ['about', 'experience', 'projects', 'certifications'];
       for (const section of sections) {
         const element = document.getElementById(section);
         if (element) {
@@ -32,7 +30,7 @@ function App() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
+  
   const scrollTo = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -45,7 +43,7 @@ function App() {
       
       <CodeBackground />
 
-      <div className="mx-auto max-w-screen-xl px-6 py-12 font-sans md:px-12 md:py-20 lg:px-24 lg:py-0 relative z-40">
+      <div className="mx-auto max-w-screen-xl px-6 py-12 font-sans md:px-12 md:py-20 lg:px-24 lg:py-0 relative">
         <div className="lg:flex lg:justify-between lg:gap-12">
           
           {/* LEFT COLUMN: Sidebar */}
@@ -55,20 +53,9 @@ function App() {
                 {/* 
                   NOTE: Assets are now imported from src/assets/ folder.
                   The import provides the correct path for both development and production builds.
+                  Profile image is now a modal trigger with eager loading for high-res variants.
                 */}
-                <div className="h-44 w-44 relative overflow-hidden rounded-full border-4 border-slate-800 shadow-2xl group">
-                    <img
-                      src={profilePhotoSmall}
-                      srcSet={`${profilePhotoSmall} 600w, ${profilePhotoMedium} 1200w, ${profilePhotoLarge} 2400w`}
-                      sizes="176px"
-                      alt={RESUME.name}
-                      width={176}
-                      height={176}
-                      fetchPriority="high"
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-slate-900/10"></div>
-                </div>
+                <ProfileImageModal />
               </div>
 
               <h1 className="text-4xl font-bold tracking-tight text-slate-200 sm:text-5xl">
@@ -83,7 +70,7 @@ function App() {
               
               <nav className="nav hidden lg:block" aria-label="In-page jump links">
                 <ul className="mt-16 w-max">
-                  {['About', 'Experience', 'Projects'].map((item) => (
+                  {['About', 'Experience', 'Projects', 'Certifications'].map((item) => (
                     <li key={item}>
                       <button 
                         onClick={() => scrollTo(item.toLowerCase())}
@@ -196,15 +183,6 @@ function App() {
                 </ul>
               </div>
 
-              <div className="mb-12">
-                <h3 className="mb-4 text-slate-200 font-semibold uppercase tracking-widest text-xs">Certifications</h3>
-                <div className="space-y-4">
-                   {RESUME.certifications.map((cert, i) => (
-                      <CertificationCard key={i} cert={cert} />
-                   ))}
-                </div>
-              </div>
-
               <div>
                  <h3 className="mb-4 text-slate-200 font-semibold uppercase tracking-widest text-xs">Core Technologies</h3>
                  <ul className="flex flex-wrap gap-2">
@@ -218,6 +196,17 @@ function App() {
                   </ul>
               </div>
 
+            </section>
+
+            <section id="certifications" className="mb-16 scroll-mt-16 md:mb-24 lg:mb-36 lg:scroll-mt-24">
+              <div className="sticky top-0 z-20 -mx-6 mb-4 w-screen bg-slate-900/75 px-6 py-5 backdrop-blur md:-mx-12 md:px-12 lg:sr-only lg:relative lg:top-auto lg:mx-auto lg:w-full lg:px-0 lg:py-0 lg:opacity-0">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-200 lg:sr-only">Certifications</h2>
+              </div>
+              <div className="space-y-4">
+                {RESUME.certifications.map((cert, i) => (
+                  <CertificationCard key={i} cert={cert} />
+                ))}
+              </div>
             </section>
 
             <footer className="pb-32 text-sm text-slate-500 text-right">

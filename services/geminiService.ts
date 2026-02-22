@@ -5,18 +5,40 @@ import { ChatMessage } from '../types';
 // Initialize the client
 // NOTE: process.env.API_KEY is handled by the build/runtime environment securely.
 let ai: GoogleGenAI | null = null;
+let initializationError: string | null = null;
 
 try {
     // Safely access API key from either Vite's import.meta.env or process.env (for Vercel/Node)
-    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || (typeof process !== 'undefined' ? (process.env.GOOGLE_API_KEY || process.env.API_KEY) : undefined);
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || 
+                   (typeof process !== 'undefined' ? (process.env.GOOGLE_API_KEY || process.env.API_KEY) : undefined);
 
     if (apiKey) {
         ai = new GoogleGenAI({ apiKey });
     } else {
-        console.warn("API_KEY is not set. Gemini features will be disabled.");
+        initializationError = 'VITE_GOOGLE_API_KEY';
+        // Strict console warning for developers
+        console.warn(
+            '%c⚠️ Gemini AI Service Initialization Failed',
+            'color: #ff6b6b; font-size: 14px; font-weight: bold;'
+        );
+        console.warn(
+            '%cMissing Environment Variable: VITE_GOOGLE_API_KEY',
+            'color: #ff6b6b; font-size: 12px;'
+        );
+        console.warn(
+            '%cAction Required: Set the VITE_GOOGLE_API_KEY environment variable in your deployment settings.\n' +
+            'For Vercel: Add VITE_GOOGLE_API_KEY to your project Environment Variables in the Vercel dashboard.\n' +
+            'For Local Development: Add VITE_GOOGLE_API_KEY=your_key to your .env file.',
+            'color: #ffa500; font-size: 11px; font-family: monospace;'
+        );
     }
 } catch (error) {
-    console.error("Failed to initialize Gemini client:", error);
+    initializationError = error instanceof Error ? error.message : String(error);
+    console.error(
+        '%c❌ Failed to initialize Gemini client',
+        'color: #ff0000; font-size: 12px;',
+        error
+    );
 }
 
 export const sendMessageToGemini = async (
@@ -24,7 +46,11 @@ export const sendMessageToGemini = async (
   newMessage: string
 ): Promise<string> => {
   if (!ai) {
-      return "I'm sorry, the AI service is not configured correctly (missing API Key). Please contact the administrator.";
+      // Graceful degradation message for end users
+      if (initializationError === 'VITE_GOOGLE_API_KEY') {
+          return "The AI chat service is not currently available. Please feel free to reach out via Email or LinkedIn if you'd like to connect!";
+      }
+      return "The AI chat service encountered a configuration error. Please reach out via Email or LinkedIn to connect.";
   }
 
   try {
@@ -56,7 +82,12 @@ export const sendMessageToGemini = async (
 
     return result.text || "I'm sorry, I couldn't generate a response at the moment.";
   } catch (error) {
-    console.error("Error communicating with Gemini:", error);
+    // Log detailed error for developers without exposing to user
+    console.warn(
+        'Gemini API Error:',
+        error instanceof Error ? error.message : String(error)
+    );
+    // Return user-friendly message
     return "I'm currently experiencing high traffic. Please reach out to me directly via Email or LinkedIn!";
   }
 };

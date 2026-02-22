@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Solid blue background -->
+  <rect width="200" height="200" fill="#435cad"/>
+  <!-- AC initials in white -->
+  <text x="100" y="120" style="border-radius:50%; font-family:Inter, sans-serif; font-size:120px; font-weight:700; text-anchor:middle; fill:white;">ÂC</text>
+</svg>

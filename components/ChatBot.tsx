@@ -25,6 +25,9 @@ export const ChatBot: React.FC = () => {
   ]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasBeenOpened, setHasBeenOpened] = useState(false);
+  const [showAttentionAnimation, setShowAttentionAnimation] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   
   // Teaser State
   const [teaserIndex, setTeaserIndex] = useState(0);
@@ -37,13 +40,23 @@ export const ChatBot: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages, isOpen]);
 
   // Cycle Teaser Messages
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen || isMobile) {
       setShowTeaser(false);
       return;
     }
@@ -59,7 +72,7 @@ export const ChatBot: React.FC = () => {
         setShowTeaser(false);
         setTimeout(() => {
           setTeaserIndex((prev) => (prev + 1) % TEASER_MESSAGES.length);
-          if (!isOpen) setShowTeaser(true);
+          if (!isOpen && !isMobile) setShowTeaser(true);
         }, 500); // Wait for fade out transition
       }
     }, 8000); // Rotate every 8 seconds
@@ -68,7 +81,7 @@ export const ChatBot: React.FC = () => {
       clearTimeout(initialDelay);
       clearInterval(interval);
     };
-  }, [isOpen, isHoveringButton]);
+  }, [isOpen, isHoveringButton, isMobile]);
 
   const handleSendMessage = async (text: string = inputText) => {
     if (!text.trim() || isLoading) return;
@@ -86,6 +99,20 @@ export const ChatBot: React.FC = () => {
     const modelMessage: ChatMessage = { role: 'model', text: responseText };
     setMessages(prev => [...prev, modelMessage]);
     setIsLoading(false);
+    
+    // If chat was closed, re-enable animation for new message attention
+    if (!isOpen) {
+      setShowAttentionAnimation(true);
+    }
+  };
+
+  const handleChatToggle = () => {
+    const newIsOpen = !isOpen;
+    setIsOpen(newIsOpen);
+    if (newIsOpen) {
+      setHasBeenOpened(true);
+      setShowAttentionAnimation(false);
+    }
   };
 
   return (
@@ -209,16 +236,22 @@ export const ChatBot: React.FC = () => {
 
             {/* Toggle Button */}
             <button
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={handleChatToggle}
               onMouseEnter={() => setIsHoveringButton(true)}
               onMouseLeave={() => setIsHoveringButton(false)}
-              className={`group relative flex h-14 w-14 items-center justify-center rounded-full bg-teal-300 text-slate-900 shadow-[0_0_20px_rgba(45,212,191,0.3)] transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-teal-300 focus:ring-offset-2 focus:ring-offset-slate-900 z-50`}
+              className={`group relative flex h-14 w-14 items-center justify-center rounded-full bg-teal-300 text-slate-900 shadow-[0_0_20px_rgba(45,212,191,0.3)] transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-teal-300 focus:ring-offset-2 focus:ring-offset-slate-900 z-50 ${
+                // on mobile always pulse the button; desktop only when reopened and attention needed
+                isMobile
+                  ? 'animate-inflate-mobile'
+                  : (!isOpen && hasBeenOpened && showAttentionAnimation ? 'animate-inflate' : '')
+              }`}
               aria-label="Toggle Chat"
             >
               {isOpen ? <CloseIcon className="w-6 h-6" /> : <ChatIcon className="w-6 h-6" />}
               
-              {/* Unread Indicator Dot */}
-              {!isOpen && showTeaser && (
+              {/* Unread Indicator Dot - on mobile too, but only when teaser active and chat closed */}
+              {/* dot shows on mobile even if teasers are suppressed */}
+              {!isOpen && (showTeaser || isMobile) && (
                 <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-4 w-4 bg-teal-500"></span>
@@ -235,6 +268,21 @@ export const ChatBot: React.FC = () => {
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-inflate {
+          animation: inflate 2s ease-in-out infinite;
+        }
+        /* subtle slower pulse for mobile, so it doesn't feel frantic */
+        .animate-inflate-mobile {
+          animation: inflate-mobile 3s ease-in-out infinite;
+        }
+        @keyframes inflate {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.15); }
+        }
+        @keyframes inflate-mobile {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
         }
       `}</style>
     </div>
