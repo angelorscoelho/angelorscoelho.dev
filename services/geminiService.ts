@@ -54,49 +54,68 @@ export const sendMessageToGemini = async (
   }
 
   try {
-    // The previous model (`gemini-1.5-flash-latest`) was returning 404
-    // because it isn't available for the v1beta `generateContent` endpoint. The
-    // 404 caused our catch block to resolve with the "high traffic" message.
+    // We'll maintain a short ordered list of candidates.  The env var
+    // (VITE_GEMINI_MODEL) sits at the front and can be used for quick testing
+    // or swapping models without rebuilding the app.  If the API responds with
+    // a 404 for a given model, we'll automatically roll forward to the next
+    // candidate rather than immediately blowing up in the UI.  This removes the
+    // need to "guess" a model name during development.
     //
-    // Use a safer default that supports chat/generateContent. Allow an
-    // environment variable so you can swap models without rebuilding.
-    //
-    // Valid options (as of Feb 2026) include things like:
-    //   - gemini-1.5
-    //   - gemini-1.5-mini
-    //   - gemini-1.5-latest
-    //   - gpt-4o-mini (also works with this client)
-    //
-    // The `models.list()` API can be used (server‑side) to discover current
-    // names, but for our static SPA we'll just pick a known-good default.
-    const modelId =
-      import.meta.env.VITE_GEMINI_MODEL ||
-      // fallback to a broad, chat-compatible model
-      'gemini-1.5';
+    // Feel free to call `ai.models.list()` on the server or run
+    // `scripts/list-models.js` (after setting an API key) to see the current
+    // catalogue of supported models; our fallback chain is simply a starting
+    // point based on what was available in early 2026.
+    const candidateModels = [
+      import.meta.env.VITE_GEMINI_MODEL,
+      'gemini-1.5',
+      'gemini-1.5-mini',
+      'gemini-1.5-latest',
+      'gpt-4o-mini'
+    ].filter(Boolean) as string[];  // drop undefined entries
 
-    // Construct the history for the API (converting our internal type to Gemini's format if needed,
-    // but here we will just concatenate the context for a single-turn-like strong prompt
-    // or use chat session if we wanted full state. For simplicity and robustness in a static SPA,
-    // we will use generateContent with the system instruction).
-    
-    // Create a chat session
-    const chat = ai.chats.create({
-      model: modelId,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.7,
-      },
-      history: history.map(msg => ({
-        role: msg.role,
-        parts: [{ text: msg.text }],
-      })),
-    });
+    let lastError: any = null;
+    let responseText: string | null = null;
 
-    const result: GenerateContentResponse = await chat.sendMessage({
-      message: newMessage
-    });
+    for (const modelId of candidateModels) {
+      try {
+        const chat = ai.chats.create({
+          model: modelId,
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+            temperature: 0.7,
+          },
+          history: history.map(msg => ({
+            role: msg.role,
+            parts: [{ text: msg.text }],
+          })),
+        });
 
-    return result.text || "I'm sorry, I couldn't generate a response at the moment.";
+        const result: GenerateContentResponse = await chat.sendMessage({
+          message: newMessage
+        });
+
+        responseText = result.text;
+        break;  // success, exit loop
+      } catch (err) {
+        // if it's a 404 model-not-found, try next candidate
+        const errObj = err && typeof err === 'object' && 'error' in err && (err as any).error;
+        if (errObj && errObj.code === 404) {
+          console.warn(`model ${modelId} not available – trying next`);
+          lastError = err;
+          continue;
+        }
+        // non-404 error, rethrow to be handled by outer catch
+        throw err;
+      }
+    }
+
+    // If we fell out without a responseText we'll handle below
+    if (responseText !== null) {
+      return responseText || "I'm sorry, I couldn't generate a response at the moment.";
+    }
+    // otherwise fall through to error handling logic below
+    throw lastError || new Error('no model succeeded');
+
   } catch (error) {
     // Log detailed error for developers without exposing to user
     console.warn(
