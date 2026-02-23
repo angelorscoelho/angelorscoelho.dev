@@ -74,7 +74,7 @@ export const sendMessageToGemini = async (
     ].filter(Boolean) as string[];  // drop undefined entries
 
     let lastError: any = null;
-    let responseText: string | null = null;
+    let responseText: string | null | undefined = null;
 
     for (const modelId of candidateModels) {
       try {
