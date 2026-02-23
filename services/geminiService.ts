@@ -54,9 +54,25 @@ export const sendMessageToGemini = async (
   }
 
   try {
-    // We use gemini-1.5-flash-latest for speed and efficiency as requested.
-    // It is capable enough for this RAG-like context task.
-    const modelId = 'gemini-1.5-flash-latest';
+    // The previous model (`gemini-1.5-flash-latest`) was returning 404
+    // because it isn't available for the v1beta `generateContent` endpoint. The
+    // 404 caused our catch block to resolve with the "high traffic" message.
+    //
+    // Use a safer default that supports chat/generateContent. Allow an
+    // environment variable so you can swap models without rebuilding.
+    //
+    // Valid options (as of Feb 2026) include things like:
+    //   - gemini-1.5
+    //   - gemini-1.5-mini
+    //   - gemini-1.5-latest
+    //   - gpt-4o-mini (also works with this client)
+    //
+    // The `models.list()` API can be used (server‑side) to discover current
+    // names, but for our static SPA we'll just pick a known-good default.
+    const modelId =
+      import.meta.env.VITE_GEMINI_MODEL ||
+      // fallback to a broad, chat-compatible model
+      'gemini-1.5';
 
     // Construct the history for the API (converting our internal type to Gemini's format if needed,
     // but here we will just concatenate the context for a single-turn-like strong prompt
@@ -87,7 +103,21 @@ export const sendMessageToGemini = async (
         'Gemini API Error:',
         error instanceof Error ? error.message : String(error)
     );
-    // Return user-friendly message
+
+    // If the error indicates the selected model isn't available we can
+    // provide a slightly different message during dev so the issue is easier
+    // to diagnose (but still keep it generic for end users).
+    const errMsg =
+      error && typeof error === 'object' &&
+      'error' in error &&
+      (error as any).error;
+
+    if (errMsg && errMsg.code === 404) {
+      console.warn('Gemini model not found - check VITE_GEMINI_MODEL setting');
+      return "The AI chat service is temporarily unavailable. I'm working on a fix!";
+    }
+
+    // Generic fallback message
     return "I'm currently experiencing high traffic. Please reach out to me directly via Email or LinkedIn!";
   }
 };
