@@ -2,13 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { spawnSync } from 'child_process';
+import { fileURLToPath } from 'url';
 
 function exists(p) { return fs.existsSync(p); }
 
-const projectRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-// On Windows the pathname may start with a leading slash, remove on drive-letter paths
-let fixedRoot = projectRoot;
-if (process.platform === 'win32' && fixedRoot.startsWith('/')) fixedRoot = fixedRoot.slice(1);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const fixedRoot = path.resolve(__dirname, '..');
 
 const repoUrl = 'https://github.com/angelorscoelho/resume.git';
 const submoduleDir = path.join(fixedRoot, 'resume');
@@ -92,34 +92,59 @@ async function build() {
     return;
   }
 
-  // If Makefile is present, try make
+  // Try to build from source — attempt make, latexmk, pdflatex in order
+  let built = false;
+
+  // If Makefile is present, try make first
   if (exists(path.join(srcDir, 'Makefile')) || exists(path.join(srcDir, 'makefile'))) {
-    console.log('Makefile found — running `make`');
+    console.log('Makefile found — trying `make`');
     const r = runCmd('make', [], srcDir);
-    if (!r.ok) process.exit(r.code || 1);
-  } else {
+    built = r.ok;
+    if (!built) console.log('make failed or not available — trying other methods');
+  }
+
+  if (!built) {
     const mainTex = findMainTex(srcDir);
     if (!mainTex) {
       console.error('No .tex file found in resume source: ' + srcDir);
       process.exit(3);
     }
     // Try latexmk first
-    let ok = false;
     let r = runCmd('latexmk', ['-pdf', '-interaction=nonstopmode', mainTex], srcDir);
-    if (r.ok) ok = true;
-    else {
-      console.log('latexmk failed or not available — falling back to pdflatex (twice)');
+    if (r.ok) {
+      built = true;
+    } else {
+      console.log('latexmk failed or not available — falling back to pdflatex');
       r = runCmd('pdflatex', ['-interaction=nonstopmode', mainTex], srcDir);
       if (r.ok) {
-        // run second time for references
         const r2 = runCmd('pdflatex', ['-interaction=nonstopmode', mainTex], srcDir);
-        ok = r2.ok;
+        built = r2.ok;
       }
     }
-    if (!ok) {
-      console.error('LaTeX build failed. Ensure latexmk or pdflatex is installed and in PATH.');
-      process.exit(4);
-    }
+  }
+
+  // Try Docker as last resort
+  if (!built) {
+    const mainTex = findMainTex(srcDir) || 'main.tex';
+    console.log('Trying Docker-based LaTeX build...');
+    const volume = srcDir.replace(/\\/g, '/');
+    const r = runCmd('docker', [
+      'run', '--rm',
+      '-v', volume + ':/workspace',
+      '-w', '/workspace',
+      'texlive/texlive',
+      'latexmk', '-pdf', '-interaction=nonstopmode', mainTex
+    ], srcDir);
+    built = r.ok;
+    if (!built) console.log('Docker build also failed or Docker not available');
+  }
+
+  if (!built) {
+    console.error('No prebuilt PDF found and all LaTeX build methods failed.');
+    console.error('Options: 1) Run the GitHub Actions workflow to build & push a PDF to the resume repo');
+    console.error('         2) Install a TeX toolchain (latexmk/pdflatex) locally');
+    console.error('         3) Install Docker and retry (uses texlive/texlive image)');
+    process.exit(4);
   }
 
   const pdfPath = findNewestPdf(srcDir);
