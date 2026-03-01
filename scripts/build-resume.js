@@ -21,12 +21,6 @@ const repoUrl = 'https://github.com/angelorscoelho/resume.git';
 const submoduleDir = path.join(fixedRoot, 'resume');
 const envSrc = process.env.RESUME_SRC;
 
-// if user has already committed a PDF under src/assets, nothing else is required
-const embeddedPdf = path.join(fixedRoot, 'src', 'assets', 'resume.pdf');
-if (exists(embeddedPdf)) {
-  console.log('Embedded resume PDF found; skipping resume build.');
-  process.exit(0);
-}
 
 const tmpBase = os.tmpdir();
 const tmpCloneDir = path.join(tmpBase, 'resume-clone-' + Date.now());

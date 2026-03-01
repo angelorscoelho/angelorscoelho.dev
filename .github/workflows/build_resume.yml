@@ -7,6 +7,8 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout current repo
         uses: actions/checkout@v4
@@ -42,14 +44,16 @@ jobs:
             fi
           fi
 
-      - name: Commit and push generated PDF back to resume repo
-        if: env.RESUME_REPO_PAT != ''
-        env:
-          RESUME_REPO_PAT: ${{ secrets.RESUME_REPO_PAT }}
+      - name: Copy built PDF into site assets and push
         run: |
-          cd resume
+          PDF=$(find resume -maxdepth 2 -name 'resume.pdf' -o -name 'main.pdf' 2>/dev/null | head -n1)
+          if [ -z "$PDF" ]; then
+            echo "No PDF found after build; aborting."; exit 1
+          fi
+          mkdir -p src/assets
+          cp "$PDF" src/assets/resume.pdf
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f *.pdf || true
-          git commit -m "CI: update resume.pdf" || echo "no changes to commit"
-          git push https://$RESUME_REPO_PAT@github.com/angelorscoelho/resume.git HEAD:main
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/assets/resume.pdf
+          git commit -m "ci: update resume.pdf" || echo "no changes to commit"
+          git push origin HEAD:main
