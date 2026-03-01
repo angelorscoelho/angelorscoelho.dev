@@ -21,9 +21,10 @@ export const RESUME: ResumeData = {
       location: "Braga, Portugal",
       description: "Driving technical excellence and process optimization within enterprise software teams.",
       achievements: [
-        "Discussed requirements, architected solutions and implemented new tools and integrations (PHP, Laravel, Vue.js), including event-driven integrations (Solace PubSub+) and Azure SSO to modernize operational tooling.",
-        "Engineered the department's transition to automated delivery, replacing manual staging with standardized CI/CD pipelines (GitHub Actions) and comprehensive testing suites (Playwright, PHPUnit).",
-        "Championed operational efficiency by integrating advanced AI workflows—leveraging MCP servers and context-aware model orchestration for planning, debugging, and documentation—significantly reducing development friction."
+        "Led LEAN initiatives, developing automated workflows that reduced departmental overhead by 20+ hours/month. Championed AI-assisted development practices (GitHub Copilot, MCP servers) to accelerate feature delivery and reduce engineering friction.",
+        "Engineered the department's transition to automated delivery via GitHub Actions and robust testing suites (Playwright, PHPUnit).",
+        "Architected and maintained production software and real-time monitoring tools (PHP, Laravel, Vue.js) integrated with low-latency event-driven architectures (Solace PubSub+), serving thousands of daily users.",
+        "Mentored junior engineers and led internal workshops on cloud-native development and CI/CD best practices to elevate team capabilities."
       ],
       skills: ["CI/CD", "GitHub Actions", "PHP", "Laravel", "Vue.js", "Playwright", "PHPUnit", "Solace", "AI Orchestration"]
     },
@@ -60,6 +61,12 @@ export const RESUME: ResumeData = {
     }
   ],
   certifications: [
+    { 
+      name: "BSc in Computer Science", 
+      issuer: "Universidade do Minho", 
+      year: "2018",
+      url: "https://www.linkedin.com/in/angelorscoelho/details/certifications/"
+    },
     { 
       name: "Building AI Agents and Agentic Workflows Specialization", 
       issuer: "DeepLearning.AI", 

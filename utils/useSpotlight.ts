@@ -1,13 +1,40 @@
 import { useEffect, RefObject } from 'react';
 
-// Global mouse tracker to allow updates during scroll even if mouse doesn't move
-let globalMouseX = 0;
-let globalMouseY = 0;
+// Global pointer tracker (mouse or touch) to allow updates during scroll even if the
+// physical cursor isn't moving.  Initialized to center of viewport so the effect is
+// visible before any interaction.
+let globalMouseX = typeof window !== 'undefined' ? window.innerWidth / 2 : 0;
+let globalMouseY = typeof window !== 'undefined' ? window.innerHeight / 2 : 0;
 
 if (typeof window !== 'undefined') {
-    window.addEventListener('mousemove', (e) => {
-        globalMouseX = e.clientX;
-        globalMouseY = e.clientY;
+    // pointermove covers mouse and pen; touchmove handles finger drags
+    const updateFromPointer = (x: number, y: number) => {
+      globalMouseX = x;
+      globalMouseY = y;
+    };
+
+    window.addEventListener('pointermove', (e) => {
+        updateFromPointer(e.clientX, e.clientY);
+    });
+    window.addEventListener('pointerdown', (e) => {
+        updateFromPointer(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) {
+            updateFromPointer(e.touches[0].clientX, e.touches[0].clientY);
+        }
+    }, { passive: true });
+    window.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 0) {
+            updateFromPointer(e.touches[0].clientX, e.touches[0].clientY);
+        }
+    }, { passive: true });
+
+    // keep center coords updated on resize so initial glow remains centered
+    window.addEventListener('resize', () => {
+      globalMouseX = window.innerWidth / 2;
+      globalMouseY = window.innerHeight / 2;
     });
 }
 

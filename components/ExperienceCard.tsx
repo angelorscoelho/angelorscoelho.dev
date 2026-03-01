@@ -15,8 +15,9 @@ export const ExperienceCard: React.FC<ExperienceCardProps> = ({ job }) => {
       ref={cardRef}
       className="group relative grid pb-1 transition-all sm:grid-cols-12 sm:gap-8 md:gap-4 rounded-lg border border-slate-800/50 p-6 bg-slate-900/90 hover:bg-slate-900/100 shadow-sm"
     >
+      {/* spotlight always visible */}
       <div 
-        className="absolute -inset-px z-0 rounded-lg transition-opacity duration-300 opacity-0 group-hover:opacity-100 pointer-events-none"
+        className="absolute -inset-px z-0 rounded-lg transition-opacity duration-300 opacity-100 pointer-events-none"
         style={{
           background: `radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(94, 234, 212, 0.1), transparent 40%)`
         }}

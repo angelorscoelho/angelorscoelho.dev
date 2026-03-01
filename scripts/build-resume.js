@@ -6,13 +6,27 @@ import { fileURLToPath } from 'url';
 
 function exists(p) { return fs.existsSync(p); }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const fixedRoot = path.resolve(__dirname, '..');
+function toolExists(name) {
+  // run `command -v name` to detect POSIX binaries; return false if not found
+  const r = spawnSync('command', ['-v', name], { stdio: 'ignore', shell: false });
+  return r.status === 0;
+}
+
+const projectRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+// On Windows the pathname may start with a leading slash, remove on drive-letter paths
+let fixedRoot = projectRoot;
+if (process.platform === 'win32' && fixedRoot.startsWith('/')) fixedRoot = fixedRoot.slice(1);
 
 const repoUrl = 'https://github.com/angelorscoelho/resume.git';
 const submoduleDir = path.join(fixedRoot, 'resume');
 const envSrc = process.env.RESUME_SRC;
+
+// if user has already committed a PDF under src/assets, nothing else is required
+const embeddedPdf = path.join(fixedRoot, 'src', 'assets', 'resume.pdf');
+if (exists(embeddedPdf)) {
+  console.log('Embedded resume PDF found; skipping resume build.');
+  process.exit(0);
+}
 
 const tmpBase = os.tmpdir();
 const tmpCloneDir = path.join(tmpBase, 'resume-clone-' + Date.now());
@@ -30,16 +44,16 @@ if (exists(submoduleDir)) {
   console.log('No local resume source found. Attempting to clone ' + repoUrl + ' into temporary directory.');
   const r = spawnSync('git', ['clone', '--depth', '1', repoUrl, tmpCloneDir], { cwd: fixedRoot, stdio: 'inherit' });
   if (r.error || r.status !== 0) {
-    console.error('Failed to clone resume repo. Set RESUME_SRC to a local path or add the repo as a submodule at ./resume.');
-    process.exit(2);
-  }
-  if (exists(tmpCloneDir)) {
+    console.warn('Could not clone resume repo; continuing without resume source.');
+    console.warn('Set RESUME_SRC to a local path or add the repo as a submodule at ./resume if you need to build.');
+    // leave srcDir null, build() will simply skip operations
+  } else if (exists(tmpCloneDir)) {
     srcDir = tmpCloneDir;
     clonedTemp = true;
     console.log('Cloned resume repo to temporary directory: ' + srcDir);
   } else {
-    console.error('Cloning finished but temporary folder not found: ' + tmpCloneDir);
-    process.exit(2);
+    console.warn('Cloning finished but temporary folder not found: ' + tmpCloneDir);
+    // still continue without a source
   }
 }
 
@@ -80,71 +94,82 @@ function findNewestPdf(folder) {
 }
 
 async function build() {
-  // If a prebuilt PDF exists in the resume source, use it (useful for Vercel/CI where TeX may not be installed)
-  const prebuilt = findNewestPdf(srcDir);
   const destDir = path.join(fixedRoot, 'src', 'assets');
+  const assetPdf = path.join(destDir, 'resume.pdf');
+
+  // if we already placed the PDF in assets earlier or checked it in, nothing
+  // further needs to happen (this duplicate check is minor but keeps
+  // behaviour consistent when build() is called directly).
+  if (exists(assetPdf)) {
+    console.log('resume.pdf already exists in assets; skipping resume build.');
+    return;
+  }
+
+  // if we never obtained a source directory (clone failure or no env/submodule)
+  if (!srcDir) {
+    console.log('No resume source available; skipping resume build.');
+    return;
+  }
+
+  // copy any prebuilt PDF that may already exist in the source directory
+  const prebuilt = findNewestPdf(srcDir);
   if (prebuilt) {
     if (!exists(destDir)) fs.mkdirSync(destDir, { recursive: true });
     const dest = path.join(destDir, 'resume.pdf');
     fs.copyFileSync(prebuilt, dest);
-    console.log('Found prebuilt PDF in resume repo; copied to', dest);
+    console.log('Found prebuilt PDF in resume source; copied to', dest);
     if (clonedTemp) fs.rmSync(srcDir, { recursive: true, force: true });
     return;
   }
 
-  // Try to build from source — attempt make, latexmk, pdflatex in order
-  let built = false;
-
-  // If Makefile is present, try make first
+  // if we reach here, there is no prebuilt PDF; attempt compilation only if tools exist
   if (exists(path.join(srcDir, 'Makefile')) || exists(path.join(srcDir, 'makefile'))) {
-    console.log('Makefile found — trying `make`');
+    if (!toolExists('make')) {
+      console.warn('Makefile present but `make` is not available; skipping resume build.');
+      if (clonedTemp) fs.rmSync(srcDir, { recursive: true, force: true });
+      return;
+    }
+    console.log('Makefile found — running `make`');
     const r = runCmd('make', [], srcDir);
-    built = r.ok;
-    if (!built) console.log('make failed or not available — trying other methods');
-  }
-
-  if (!built) {
+    if (!r.ok) {
+      console.warn('`make` failed; resume PDF will not be produced (continuing).');
+      if (clonedTemp) fs.rmSync(srcDir, { recursive: true, force: true });
+      return;
+    }
+  } else {
     const mainTex = findMainTex(srcDir);
     if (!mainTex) {
       console.error('No .tex file found in resume source: ' + srcDir);
-      process.exit(3);
+      if (clonedTemp) fs.rmSync(srcDir, { recursive: true, force: true });
+      return;
     }
-    // Try latexmk first
-    let r = runCmd('latexmk', ['-pdf', '-interaction=nonstopmode', mainTex], srcDir);
-    if (r.ok) {
-      built = true;
-    } else {
-      console.log('latexmk failed or not available — falling back to pdflatex');
-      r = runCmd('pdflatex', ['-interaction=nonstopmode', mainTex], srcDir);
+
+    if (!toolExists('latexmk') && !toolExists('pdflatex')) {
+      console.warn('No LaTeX tools (latexmk or pdflatex) available; skipping compile.');
+      if (clonedTemp) fs.rmSync(srcDir, { recursive: true, force: true });
+      return;
+    }
+
+    // Try latexmk first if available
+    let ok = false;
+    if (toolExists('latexmk')) {
+      const r = runCmd('latexmk', ['-pdf', '-interaction=nonstopmode', mainTex], srcDir);
+      if (r.ok) ok = true;
+    }
+    if (!ok && toolExists('pdflatex')) {
+      console.log('latexmk not successful; using pdflatex fallback (twice)');
+      let r = runCmd('pdflatex', ['-interaction=nonstopmode', mainTex], srcDir);
       if (r.ok) {
         const r2 = runCmd('pdflatex', ['-interaction=nonstopmode', mainTex], srcDir);
         built = r2.ok;
       }
     }
-  }
 
-  // Try Docker as last resort
-  if (!built) {
-    const mainTex = findMainTex(srcDir) || 'main.tex';
-    console.log('Trying Docker-based LaTeX build...');
-    const volume = srcDir.replace(/\\/g, '/');
-    const r = runCmd('docker', [
-      'run', '--rm',
-      '-v', volume + ':/workspace',
-      '-w', '/workspace',
-      'texlive/texlive',
-      'latexmk', '-pdf', '-interaction=nonstopmode', mainTex
-    ], srcDir);
-    built = r.ok;
-    if (!built) console.log('Docker build also failed or Docker not available');
-  }
-
-  if (!built) {
-    console.error('No prebuilt PDF found and all LaTeX build methods failed.');
-    console.error('Options: 1) Run the GitHub Actions workflow to build & push a PDF to the resume repo');
-    console.error('         2) Install a TeX toolchain (latexmk/pdflatex) locally');
-    console.error('         3) Install Docker and retry (uses texlive/texlive image)');
-    process.exit(4);
+    if (!ok) {
+      console.warn('LaTeX compilation failed (or tools unavailable).  Resume PDF will not be generated.');
+      if (clonedTemp) fs.rmSync(srcDir, { recursive: true, force: true });
+      return;
+    }
   }
 
   const pdfPath = findNewestPdf(srcDir);
