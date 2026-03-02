@@ -63,14 +63,13 @@ export const sendMessageToGemini = async (
     //
     // Feel free to call `ai.models.list()` on the server or run
     // `scripts/list-models.js` (after setting an API key) to see the current
-    // catalogue of supported models; our fallback chain is simply a starting
-    // point based on what was available in early 2026.
+    // catalogue of supported models; our fallback chain uses well-known stable
+    // Gemini model identifiers.
     const candidateModels = [
       import.meta.env.VITE_GEMINI_MODEL,
-      'gemini-1.5',
-      'gemini-1.5-mini',
-      'gemini-1.5-latest',
-      'gpt-4o-mini'
+      'gemini-2.0-flash',
+      'gemini-1.5-flash',
+      'gemini-1.5-pro',
     ].filter(Boolean) as string[];  // drop undefined entries
 
     let lastError: any = null;
