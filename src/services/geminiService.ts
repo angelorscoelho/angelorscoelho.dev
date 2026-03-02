@@ -11,9 +11,9 @@ export const sendMessageToGemini = async (
   newMessage: string
 ): Promise<string> => {
   try {
-    // We use gemini-3-flash-preview for speed and efficiency as requested.
+    // We use gemini-2.0-flash for speed and efficiency.
     // It is capable enough for this RAG-like context task.
-    const modelId = 'gemini-3-flash-preview';
+    const modelId = 'gemini-2.0-flash';
 
     // Construct the history for the API (converting our internal type to Gemini's format if needed, 
     // but here we will just concatenate the context for a single-turn-like strong prompt 
