@@ -20,8 +20,10 @@ export const sendMessageToGemini = async (
     }
 
     if (!response.ok) {
-      console.warn('Chat API responded with status', response.status);
-      return "I'm currently experiencing high traffic. Please reach out to me directly via Email or LinkedIn!";
+      const errorData = await response.json().catch(() => ({}));
+      console.warn('Chat API error:', response.status, errorData);
+      // Temporarily show raw error for debugging — remove later
+      return `[DEBUG] Status ${response.status}: ${JSON.stringify(errorData.details || errorData)}`;
     }
 
     const data = await response.json();

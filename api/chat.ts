@@ -1,6 +1,6 @@
-import { GoogleGenAI, GenerateContentResponse } from '@google/genai';
+// Self-contained Vercel serverless function — no SDK, raw REST calls only.
+// This avoids any SDK bundling issues and gives full visibility into Google's responses.
 
-// Inlined to keep this serverless function fully self-contained (no cross-dir imports)
 interface ChatMessage {
   role: 'user' | 'model';
   text: string;
@@ -27,14 +27,14 @@ const CANDIDATE_MODELS = [
   'gemini-1.5-pro',
 ];
 
+const GOOGLE_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+
 export default async function handler(req: any, res: any) {
-  // Only allow POST
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
 
-  // Parse body — Vercel provides it already parsed for JSON content-type
   const { history, message }: { history: ChatMessage[]; message: string } = req.body;
 
   if (!message || typeof message !== 'string') {
@@ -45,56 +45,71 @@ export default async function handler(req: any, res: any) {
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     console.error('GOOGLE_API_KEY is not set in environment variables.');
-    res.status(500).json({ error: 'Server configuration error: API key not set.' });
+    res.status(500).json({ error: 'API key not configured.' });
     return;
   }
 
-  const ai = new GoogleGenAI({ apiKey });
+  // Build the Gemini-compatible contents array from history + new message
+  const contents: any[] = [];
+  for (const msg of (history ?? [])) {
+    contents.push({ role: msg.role, parts: [{ text: msg.text }] });
+  }
+  contents.push({ role: 'user', parts: [{ text: message }] });
 
-  let lastError: unknown = null;
+  const body = {
+    system_instruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+    contents,
+    generationConfig: { temperature: 0.7 },
+  };
+
+  let lastError: any = null;
 
   for (const modelId of CANDIDATE_MODELS) {
+    const url = `${GOOGLE_API_BASE}/${modelId}:generateContent?key=${apiKey}`;
+    
     try {
-      const chat = ai.chats.create({
-        model: modelId,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          temperature: 0.7,
-        },
-        history: (history ?? []).map((msg: ChatMessage) => ({
-          role: msg.role,
-          parts: [{ text: msg.text }],
-        })),
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
       });
 
-      const result: GenerateContentResponse = await chat.sendMessage({ message });
-      const text = result.text ?? "I'm sorry, I couldn't generate a response at the moment.";
-      res.status(200).json({ text });
-      return;
-    } catch (err: any) {
-      // Log full error for Vercel function logs debugging
-      console.error(`[api/chat] Error with model ${modelId}:`, JSON.stringify(err, null, 2));
+      const data = await response.json();
 
-      const code = err?.error?.code ?? err?.status ?? err?.statusCode;
-      const msg: string = err?.message ?? err?.error?.message ?? '';
+      // Log everything for Vercel function logs
+      console.log(`[api/chat] model=${modelId} status=${response.status}`);
+      if (!response.ok) {
+        console.error(`[api/chat] Google error:`, JSON.stringify(data));
+      }
 
-      // Roll forward on 404 (model not found)
-      if (code === 404 || msg.includes('not found')) {
-        console.warn(`Model ${modelId} not available, trying next…`);
-        lastError = err;
+      if (response.status === 404) {
+        console.warn(`Model ${modelId} not found, trying next…`);
+        lastError = data;
         continue;
       }
-      // Rate limiting — includes quota exhausted (429) and RESOURCE_EXHAUSTED
-      if (code === 429 || msg.includes('429') || msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('rate')) {
-        res.status(429).json({ error: 'rate_limited' });
+
+      if (!response.ok) {
+        // Return the ACTUAL Google error for debugging (temporarily)
+        res.status(response.status).json({ 
+          error: 'google_api_error',
+          status: response.status,
+          details: data.error || data 
+        });
         return;
       }
-      // Any other error — rethrow to outer catch
-      throw err;
+
+      // Extract text from the response
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      res.status(200).json({ text: text || "I'm sorry, I couldn't generate a response." });
+      return;
+
+    } catch (fetchErr: any) {
+      console.error(`[api/chat] Fetch error for ${modelId}:`, fetchErr.message);
+      lastError = fetchErr;
+      continue;
     }
   }
 
-  // All models failed with 404
-  console.error('All candidate models returned 404:', lastError);
-  res.status(503).json({ error: 'No available model found.' });
+  // All models failed
+  res.status(503).json({ error: 'all_models_failed', details: lastError });
 }
