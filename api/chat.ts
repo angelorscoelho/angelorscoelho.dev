@@ -21,14 +21,41 @@ Context about Ângelo:
 Maintain a professional, helpful assistant tone. Use the first person or third person as appropriate for an assistant.
 `;
 
-const CANDIDATE_MODELS = [
-  'gemini-1.5-flash',
+const PREFERRED_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
   'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
   'gemini-pro',
   'gemini-1.5-pro',
 ];
 
 const GOOGLE_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+const listAvailableModels = async (apiKey: string): Promise<string[]> => {
+  try {
+    const response = await fetch(`${GOOGLE_API_BASE}?key=${apiKey}`);
+    if (!response.ok) {
+      console.error('[api/chat] Failed to list models, status:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    const models = Array.isArray(data?.models) ? data.models : [];
+
+    return models
+      .filter((model: any) =>
+        Array.isArray(model?.supportedGenerationMethods) &&
+        model.supportedGenerationMethods.includes('generateContent')
+      )
+      .map((model: any) => String(model?.name || '').replace(/^models\//, ''))
+      .filter((name: string) => Boolean(name));
+  } catch (error) {
+    console.error('[api/chat] Failed to list models:', error);
+    return [];
+  }
+};
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -63,9 +90,22 @@ export default async function handler(req: any, res: any) {
     generationConfig: { temperature: 0.7 },
   };
 
+  const availableModels = await listAvailableModels(apiKey);
+  const preferredAvailable = PREFERRED_MODELS.filter((model) => availableModels.includes(model));
+  const discoveredFallback = availableModels.filter((model) => !PREFERRED_MODELS.includes(model));
+  const candidateModels = [...preferredAvailable, ...discoveredFallback].slice(0, 12);
+
+  if (candidateModels.length === 0) {
+    res.status(503).json({
+      error: 'no_supported_models',
+      details: 'No model with generateContent support was returned for this API key/project.',
+    });
+    return;
+  }
+
   let lastError: any = null;
 
-  for (const modelId of CANDIDATE_MODELS) {
+  for (const modelId of candidateModels) {
     const url = `${GOOGLE_API_BASE}/${modelId}:generateContent?key=${apiKey}`;
     
     try {
