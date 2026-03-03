@@ -72,14 +72,20 @@ export default async function handler(req: any, res: any) {
       res.status(200).json({ text });
       return;
     } catch (err: any) {
+      // Log full error for Vercel function logs debugging
+      console.error(`[api/chat] Error with model ${modelId}:`, JSON.stringify(err, null, 2));
+
+      const code = err?.error?.code ?? err?.status ?? err?.statusCode;
+      const msg: string = err?.message ?? err?.error?.message ?? '';
+
       // Roll forward on 404 (model not found)
-      if (err?.error?.code === 404 || err?.status === 404) {
+      if (code === 404 || msg.includes('not found')) {
         console.warn(`Model ${modelId} not available, trying next…`);
         lastError = err;
         continue;
       }
-      // For rate-limiting surface a clear error so the client can show the right message
-      if (err?.error?.code === 429 || err?.status === 429) {
+      // Rate limiting — includes quota exhausted (429) and RESOURCE_EXHAUSTED
+      if (code === 429 || msg.includes('429') || msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('rate')) {
         res.status(429).json({ error: 'rate_limited' });
         return;
       }
