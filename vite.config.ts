@@ -4,12 +4,6 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  define: {
-    // This allows the code to use process.env.API_KEY and process.env.GOOGLE_API_KEY
-    // It maps the build-time environment variable to the client-side code
-    'process.env.API_KEY': JSON.stringify(process.env.API_KEY),
-    'process.env.GOOGLE_API_KEY': JSON.stringify(process.env.GOOGLE_API_KEY)
-  },
   build: {
     outDir: 'dist',
   }
