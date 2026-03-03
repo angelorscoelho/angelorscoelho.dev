@@ -1,4 +1,10 @@
 {
+  "functions": {
+    "api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "regions": ["iad1"],
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
