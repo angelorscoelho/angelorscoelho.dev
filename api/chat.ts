@@ -88,12 +88,19 @@ export default async function handler(req: any, res: any) {
         continue;
       }
 
+      // limit: 0 means this model has no free-tier quota on this project — try next model
+      const isLimitZero = JSON.stringify(data).includes('limit: 0');
+      if (response.status === 429 && isLimitZero) {
+        console.warn(`Model ${modelId} has limit: 0 quota, trying next…`);
+        lastError = data;
+        continue;
+      }
+
       if (!response.ok) {
-        // Return the ACTUAL Google error for debugging (temporarily)
-        res.status(response.status).json({ 
+        res.status(response.status).json({
           error: 'google_api_error',
           status: response.status,
-          details: data.error || data 
+          details: data.error || data
         });
         return;
       }

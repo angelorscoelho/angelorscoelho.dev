@@ -19,11 +19,14 @@ export const sendMessageToGemini = async (
       return "I'm receiving a lot of messages right now. Please try again in a moment, or reach out directly via Email or LinkedIn!";
     }
 
+    if (response.status === 429) {
+      return "I'm receiving a lot of messages right now. Please try again in a moment, or reach out directly via Email or LinkedIn!";
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.warn('Chat API error:', response.status, errorData);
-      // Temporarily show raw error for debugging — remove later
-      return `[DEBUG] Status ${response.status}: ${JSON.stringify(errorData.details || errorData)}`;
+      return "I'm currently experiencing high traffic. Please reach out to me directly via Email or LinkedIn!";
     }
 
     const data = await response.json();
