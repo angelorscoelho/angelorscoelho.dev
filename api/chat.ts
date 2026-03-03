@@ -22,9 +22,9 @@ Maintain a professional, helpful assistant tone. Use the first person or third p
 `;
 
 const CANDIDATE_MODELS = [
+  'gemini-1.5-flash-8b',
   'gemini-2.0-flash',
   'gemini-1.5-flash',
-  'gemini-1.5-pro',
 ];
 
 const GOOGLE_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
