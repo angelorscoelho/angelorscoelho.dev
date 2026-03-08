@@ -1,7 +1,7 @@
 {
-  "sha": "0000000000000000000000000000000000000000",
-  "shaShort": "0000000",
-  "builtAt": "local-build",
-  "resumeCommitUrl": "https://github.com/angelorscoelho/resume/commits/main",
+  "sha": "dbff31328178ed4fdcc9781fea07d10d2455e7dc",
+  "shaShort": "dbff313",
+  "builtAt": "2026-03-08T18:30:54Z",
+  "resumeCommitUrl": "https://github.com/angelorscoelho/resume/commit/dbff31328178ed4fdcc9781fea07d10d2455e7dc",
   "resumeWorkflowUrl": "https://github.com/angelorscoelho/resume/actions/workflows/build-and-publish-resume.yml"
 }
