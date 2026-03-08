@@ -8,6 +8,7 @@ import { SpotlightCard } from './components/SpotlightCard';
 import { CertificationCard } from './components/CertificationCard';
 import { ProfileImageModal } from './components/ProfileImageModal';
 import { GitHubIcon, LinkedInIcon, ExternalLinkIcon, EmailIcon, FileTextIcon } from './components/Icon';
+import { AutomationDiagram } from './components/AutomationDiagram';
 import resume from './src/assets/resume.pdf';
 
 function App() {
@@ -15,7 +16,7 @@ function App() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['about', 'experience', 'projects', 'certifications'];
+      const sections = ['about', 'experience', 'automation', 'projects', 'certifications'];
       for (const section of sections) {
         const element = document.getElementById(section);
         if (element) {
@@ -70,7 +71,7 @@ function App() {
               
               <nav className="nav hidden lg:block" aria-label="In-page jump links">
                 <ul className="mt-16 w-max">
-                  {['About', 'Experience', 'Projects', 'Certifications'].map((item) => (
+                  {['About', 'Experience', 'Automation', 'Projects', 'Certifications'].map((item) => (
                     <li key={item}>
                       <button 
                         onClick={() => scrollTo(item.toLowerCase())}
@@ -157,6 +158,13 @@ function App() {
                   </a>
                 </div>
               </div>
+            </section>
+
+            <section id="automation" className="mb-16 scroll-mt-16 md:mb-24 lg:mb-36 lg:scroll-mt-24">
+              <div className="sticky top-0 z-20 -mx-6 mb-4 w-screen bg-slate-900/75 px-6 py-5 backdrop-blur md:-mx-12 md:px-12 lg:sr-only lg:relative lg:top-auto lg:mx-auto lg:w-full lg:px-0 lg:py-0 lg:opacity-0">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-200 lg:sr-only">Automation</h2>
+              </div>
+              <AutomationDiagram />
             </section>
 
             <section id="projects" className="mb-16 scroll-mt-16 md:mb-24 lg:mb-36 lg:scroll-mt-24">

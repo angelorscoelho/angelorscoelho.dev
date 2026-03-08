@@ -50,10 +50,28 @@ jobs:
           if [ -z "$PDF" ]; then
             echo "No PDF found after build; aborting."; exit 1
           fi
+
+          # Capture the exact commit SHA from the resume repo that produced this PDF
+          RESUME_SHA=$(git -C resume rev-parse HEAD)
+          RESUME_SHA_SHORT=$(git -C resume rev-parse --short HEAD)
+          BUILT_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
           mkdir -p src/assets
           cp "$PDF" src/assets/resume.pdf
+
+          # Write traceability metadata alongside the PDF
+          cat > src/assets/resume-meta.json <<EOF
+          {
+            "sha": "${RESUME_SHA}",
+            "shaShort": "${RESUME_SHA_SHORT}",
+            "builtAt": "${BUILT_AT}",
+            "resumeCommitUrl": "https://github.com/angelorscoelho/resume/commit/${RESUME_SHA}",
+            "resumeWorkflowUrl": "https://github.com/angelorscoelho/resume/actions/workflows/build-and-publish-resume.yml"
+          }
+          EOF
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/assets/resume.pdf
-          git commit -m "ci: update resume.pdf" || echo "no changes to commit"
+          git add src/assets/resume.pdf src/assets/resume-meta.json
+          git commit -m "ci: update resume.pdf [sha: ${RESUME_SHA_SHORT}]" || echo "no changes to commit"
           git push origin HEAD:main

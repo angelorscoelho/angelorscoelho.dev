@@ -103,3 +103,14 @@ export const SendIcon = ({ className }: { className?: string }) => (
         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
     </svg>
 );
+
+export const VercelIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+  >
+    <path d="M12 2L2 20h20L12 2z" />
+  </svg>
+);
