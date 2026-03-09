@@ -126,7 +126,10 @@ function writeResumeMeta(destDir, resumeSrcDir) {
     if (short.status === 0) shaShort = short.stdout.trim();
   }
 
-  if (!sha && sourceSha) { sha = sourceSha; shaShort = sourceShaShort; }
+  if (!sha && sourceSha) {
+    sha = sourceSha;
+    shaShort = sourceShaShort;
+  }
   if (!sha) {
     console.log('Could not determine resume commit SHA; skipping metadata generation.');
     return;

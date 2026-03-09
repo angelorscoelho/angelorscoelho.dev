@@ -2,6 +2,8 @@ import React from 'react';
 import { GitHubIcon, ExternalLinkIcon, VercelIcon } from './Icon';
 import resumeMeta from '../src/assets/resume-meta.json';
 
+const { sourceSha, sourceShaShort } = resumeMeta as Record<string, string>;
+
 /* ─── Shared icon helpers ──────────────────────────────────────────────────── */
 
 const ArrowDown = () => (
@@ -234,16 +236,16 @@ export const AutomationDiagram: React.FC = () => (
           </p>
 
           {/* Source → artifact commit chain (shown when both are tracked) */}
-          {'sourceShaShort' in resumeMeta && (resumeMeta as Record<string, string>).sourceShaShort !== resumeMeta.shaShort && (
+          {sourceShaShort && sourceShaShort !== resumeMeta.shaShort && (
             <p className="text-[10px] font-mono text-slate-600 mb-3">
               Source commit{' '}
               <a
-                href={`https://github.com/angelorscoelho/resume/commit/${(resumeMeta as Record<string, string>).sourceSha}`}
+                href={`https://github.com/angelorscoelho/resume/commit/${sourceSha}`}
                 target="_blank"
                 rel="noreferrer"
                 className="text-teal-300/70 hover:text-teal-300"
               >
-                #{(resumeMeta as Record<string, string>).sourceShaShort}
+                #{sourceShaShort}
               </a>
               {' '}→ artifact commit{' '}
               <a
