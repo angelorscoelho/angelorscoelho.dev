@@ -218,7 +218,7 @@ export const AutomationDiagram: React.FC = () => (
                 className="group inline-flex items-center gap-2 font-mono text-sm text-teal-300 hover:text-teal-200 transition-colors"
               >
                 <span className="text-slate-500">#</span>
-                <span className="font-semibold tracking-tight">{resumeMeta.sha}</span>
+                <span className="font-semibold tracking-tight">…{resumeMeta.shaShort}</span>
                 <ExternalLinkIcon className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
               </a>
             )}
