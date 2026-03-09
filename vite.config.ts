@@ -32,11 +32,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         /** Use the resume commit SHA as the PDF filename suffix so the deployed
-         *  URL (`/assets/resume-{sha}.pdf`) matches the commit captured in
-         *  resume-meta.json — instead of Vite's random content hash. */
+         *  URL (`/assets/angelorscoelho_resume_{sha}.pdf`) matches the commit
+         *  captured in resume-meta.json — instead of Vite's random content hash. */
         assetFileNames: (assetInfo) => {
           if (assetInfo.name === RESUME_ASSET_NAME && resumeShaShort) {
-            return `assets/resume-${resumeShaShort}.pdf`;
+            return `assets/angelorscoelho_resume_${resumeShaShort}.pdf`;
           }
           return 'assets/[name]-[hash][extname]';
         },
