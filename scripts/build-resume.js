@@ -6,7 +6,12 @@ import { fileURLToPath } from 'url';
 
 function exists(p) { return fs.existsSync(p); }
 
+// The resume pipeline publishes and surfaces SHA suffixes as the last 8
+// characters of the full commit, so the portfolio mirrors that convention.
 function getShaSuffix(sha) {
+  if (typeof sha === 'string' && sha.length > 0 && sha.length < 8) {
+    console.warn('Received truncated SHA while deriving resume suffix:', sha);
+  }
   return typeof sha === 'string' && sha.length >= 8 ? sha.slice(-8) : '';
 }
 
@@ -150,11 +155,11 @@ async function build() {
   const assetPdf = path.join(destDir, 'resume.pdf');
 
   // if we never obtained a source directory (clone failure or no env/submodule)
+  if (!srcDir && exists(assetPdf)) {
+    console.log('No resume source available; keeping existing resume assets.');
+    return;
+  }
   if (!srcDir) {
-    if (exists(assetPdf)) {
-      console.log('No resume source available; keeping existing resume assets.');
-      return;
-    }
     console.log('No resume source available; skipping resume build.');
     return;
   }
