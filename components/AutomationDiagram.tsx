@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { GitHubIcon, ExternalLinkIcon, VercelIcon } from './Icon';
 import resumeMeta from '../src/assets/resume-meta.json';
+import { useSpotlight } from '../utils/useSpotlight';
 
 const { sourceSha, sourceShaShort } = resumeMeta as Record<string, string>;
 
@@ -48,50 +49,63 @@ interface NodeProps {
   links: { href: string; label: string; icon: React.ReactNode }[];
 }
 
-const NodeCard: React.FC<NodeProps> = ({ icon, title, subtitle, description, badges, trigger, statusBadgeUrl, links }) => (
-  <div className="rounded-xl border border-slate-700/80 bg-slate-800/50 p-5 hover:border-teal-400/40 transition-all duration-300 hover:shadow-lg hover:shadow-teal-900/10">
-    {/* Header row */}
-    <div className="flex items-center gap-3 mb-3">
-      <span className="text-teal-400 shrink-0">{icon}</span>
-      <div className="min-w-0">
-        <h3 className="text-slate-200 font-semibold text-sm leading-tight">{title}</h3>
-        <p className="text-[11px] text-slate-500 font-mono leading-tight mt-0.5">{subtitle}</p>
+const NodeCard: React.FC<NodeProps> = ({ icon, title, subtitle, description, badges, trigger, statusBadgeUrl, links }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  useSpotlight(cardRef);
+
+  return (
+    <div ref={cardRef} className="group relative rounded-xl border border-slate-700/80 bg-slate-800/50 p-5 hover:border-teal-400/40 transition-all duration-300 hover:shadow-lg hover:shadow-teal-900/10">
+      {/* Spotlight background */}
+      <div 
+        className="absolute -inset-px z-0 rounded-xl transition-opacity duration-300 opacity-100 pointer-events-none"
+        style={{
+          background: `radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(94, 234, 212, 0.1), transparent 40%)`
+        }}
+      ></div>
+
+      {/* Header row */}
+      <div className="relative z-10 flex items-center gap-3 mb-3">
+        <span className="text-teal-400 shrink-0">{icon}</span>
+        <div className="min-w-0">
+          <h3 className="text-slate-200 font-semibold text-sm leading-tight">{title}</h3>
+          <p className="text-[11px] text-slate-500 font-mono leading-tight mt-0.5">{subtitle}</p>
+        </div>
       </div>
-    </div>
 
-    {/* Description */}
-    <p className="text-slate-400 text-[13px] leading-relaxed mb-3">{description}</p>
+      {/* Description */}
+      <p className="relative z-10 text-slate-400 text-[13px] leading-relaxed mb-3">{description}</p>
 
-    {/* Trigger pill */}
-    <div className="mb-3">
-      <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-600/60 bg-slate-900/60 px-2 py-0.5 text-[10px] font-mono text-slate-400">
-        <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse shrink-0"></span>
-        {trigger}
-      </span>
-    </div>
-
-    {/* Tech badges */}
-    <div className="flex flex-wrap gap-1.5 mb-4">
-      {badges.map((b) => (
-        <span key={b} className="rounded-full bg-teal-400/10 px-2.5 py-0.5 text-[10px] font-medium leading-4 text-teal-300">
-          {b}
+      {/* Trigger pill */}
+      <div className="relative z-10 mb-3">
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-600/60 bg-slate-900/60 px-2 py-0.5 text-[10px] font-mono text-slate-400">
+          <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse shrink-0"></span>
+          {trigger}
         </span>
-      ))}
-    </div>
+      </div>
 
-    {/* Explicit links */}
-    <div className="flex flex-wrap gap-2 mb-3">
-      {links.map((l) => (
-        <LinkButton key={l.href} {...l} />
-      ))}
-    </div>
+      {/* Tech badges */}
+      <div className="relative z-10 flex flex-wrap gap-1.5 mb-4">
+        {badges.map((b) => (
+          <span key={b} className="rounded-full bg-teal-400/10 px-2.5 py-0.5 text-[10px] font-medium leading-4 text-teal-300">
+            {b}
+          </span>
+        ))}
+      </div>
 
-    {/* CI badge */}
-    {statusBadgeUrl && (
-      <img src={statusBadgeUrl} alt="CI status" className="h-5 rounded mt-1" loading="lazy" />
-    )}
-  </div>
-);
+      {/* Explicit links */}
+      <div className="relative z-10 flex flex-wrap gap-2 mb-3">
+        {links.map((l) => (
+          <LinkButton key={l.href} {...l} />
+        ))}
+      </div>
+
+      {/* CI badge */}
+      {statusBadgeUrl && (
+        <img src={statusBadgeUrl} alt="CI status" className="relative z-10 h-5 rounded mt-1" loading="lazy" />
+      )}
+    </div>
+  );
+};
 
 /* ─── Arrow label (between nodes) ──────────────────────────────────────────── */
 
@@ -112,13 +126,13 @@ const ArrowLabel: React.FC<{ label: string; sublabel: string; direction: 'down' 
 export const AutomationDiagram: React.FC = () => (
   <div>
     {/* ── Section header ── */}
-    <h3 className="text-slate-200 font-semibold text-lg mb-2">
-      Think I update things manually? <span className="text-teal-300">Think again.</span>
+    <h3 className="text-slate-200 text-lg mb-2">
+      Think I update things manually? <span className="text-slate-200">Think again.</span>
     </h3>
     <p className="text-slate-400 text-sm leading-relaxed mb-8">
       Every piece of this website is wired to deploy itself. I edit a LaTeX file in my résumé repo, and within minutes
       a fresh PDF lands here and the site is live — zero clicks, zero copy-paste.
-      Want proof? The badges below are <span className="text-slate-300 font-medium">live</span> from GitHub Actions. Go ahead, check the workflow history.
+      Want proof? The badges below are live from GitHub Actions. Go ahead, check the workflow history.
     </p>
 
     {/* ── Triangle layout ──

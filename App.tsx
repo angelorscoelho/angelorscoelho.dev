@@ -132,7 +132,7 @@ function App() {
                  {RESUME.about.split('\n\n')[0]}
                 </p>
                 <p className="mb-4 leading-relaxed">
-                  I suggested and implemented application CI/CD pipelines and automation as part of broader platform improvements, integrating deployment workflows with the technologies I use. I also explore cloud solutions such as AWS to build resilient systems.
+                  Appointed as the LEAN Champion at Bosch, I lead the modernization of work routines through custom automation and standardized CI/CD workflows. I am currently specializing in AI Agentic Workflows and proactively exploring AWS Cloud Solutions to architect resilient, future-ready systems.
                 </p>
                 <p className="leading-relaxed">
                   With a solid history of delivering bespoke Full Stack solutions—from custom UI/UX workflows to high-performance backends—I am now focusing on the intersection of intelligent automation and cloud-native architecture.
