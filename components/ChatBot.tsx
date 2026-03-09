@@ -5,7 +5,7 @@ import { ChatMessage } from '../types';
 import { MarkdownRenderer } from './MarkdownRenderer';
 
 const SUGGESTED_QUESTIONS = [
-  "What would you add to my team?",
+  "What would I gain from working with you?",
   "Tell me about your background.",
   "What is your tech stack?"
 ];

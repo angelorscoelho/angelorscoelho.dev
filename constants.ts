@@ -2,9 +2,9 @@ import { ResumeData } from './types';
 
 export const RESUME: ResumeData = {
   name: "Ângelo Coelho",
-  title: "Software Engineer",
-  tagline: "Software Architect & Engineer: Specializing in AI-assisted workflows.",
-  about: "Software Architect & Engineer with 7+ years of experience delivering end-to-end solutions, from complex UI/UX workflows to high-availability backends.",
+  title: "Software Engineer | LEAN Champion",
+  tagline: "Driving CI/CD automation, AI-assisted workflows & process optimization in industrial environments.",
+  about: "Software Engineer with 7+ years of experience delivering end-to-end solutions across industrial and enterprise environments. Specialized in architecting event-driven systems, implementing CI/CD infrastructure, and leading process optimization as a LEAN Champion at Bosch.",
   email: "angelorscoelho@gmail.com",
   phone: "+351 915 479 201",
   location: "Braga, Portugal",
