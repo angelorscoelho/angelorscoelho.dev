@@ -2,6 +2,8 @@ import React from 'react';
 import { GitHubIcon, ExternalLinkIcon, VercelIcon } from './Icon';
 import resumeMeta from '../src/assets/resume-meta.json';
 
+const { sourceSha, sourceShaShort } = resumeMeta as Record<string, string>;
+
 /* ─── Shared icon helpers ──────────────────────────────────────────────────── */
 
 const ArrowDown = () => (
@@ -233,6 +235,30 @@ export const AutomationDiagram: React.FC = () => (
             Zero ambiguity, full audit trail.
           </p>
 
+          {/* Source → artifact commit chain (shown when both are tracked) */}
+          {sourceShaShort && sourceShaShort !== resumeMeta.shaShort && (
+            <p className="text-[10px] font-mono text-slate-600 mb-3">
+              Source commit{' '}
+              <a
+                href={`https://github.com/angelorscoelho/resume/commit/${sourceSha}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-teal-300/70 hover:text-teal-300"
+              >
+                #{sourceShaShort}
+              </a>
+              {' '}→ artifact commit{' '}
+              <a
+                href={resumeMeta.resumeCommitUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-teal-300/70 hover:text-teal-300"
+              >
+                #{resumeMeta.shaShort}
+              </a>
+            </p>
+          )}
+
           <div className="flex flex-wrap gap-2">
             <a
               href="https://github.com/angelorscoelho/resume/commits/main"
@@ -262,7 +288,7 @@ export const AutomationDiagram: React.FC = () => (
                 className="inline-flex items-center gap-1.5 rounded-md border border-teal-400/30 bg-teal-400/5 px-2.5 py-1 text-[11px] font-medium text-teal-300 hover:border-teal-400/60 transition-colors"
               >
                 <GitHubIcon className="w-3.5 h-3.5" />
-                Source commit #{resumeMeta.shaShort}
+                Commit #{resumeMeta.shaShort}
                 <ExternalLinkIcon className="w-3 h-3 opacity-50" />
               </a>
             )}

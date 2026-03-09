@@ -46,35 +46,63 @@ jobs:
 
       - name: Copy built PDF into site assets and push
         run: |
-          PDF=$(find resume -maxdepth 2 -name 'resume.pdf' -o -name 'main.pdf' 2>/dev/null | head -n1)
+          # ── 1. Resolve the HEAD commit of the resume repo (always authoritative) ──
+          RESUME_SHA=$(git -C resume rev-parse HEAD)
+          RESUME_SHA_SHORT=$(git -C resume rev-parse --short=8 HEAD)
+
+          # ── 2. Read source-commit info from resume-meta.json (if the resume CI
+          #       wrote one).  The source SHA is the human commit that triggered
+          #       the resume CI; HEAD may be one commit later (the CI bot commit).
+          SOURCE_SHA=""
+          SOURCE_SHA_SHORT=""
+          if [ -f resume/resume-meta.json ]; then
+            SOURCE_SHA=$(jq -r '.sha // empty' resume/resume-meta.json)
+            # Always derive the short hash from the full SHA using standard git
+            # conventions (first 8 chars), since the resume CI may use a
+            # non-standard suffix.
+            if [ -n "$SOURCE_SHA" ]; then
+              SOURCE_SHA_SHORT="${SOURCE_SHA:0:8}"
+            fi
+          fi
+
+          # ── 3. Pick the best PDF (prefer the compressed/named artifact) ──
+          PDF=""
+          if [ -n "$SOURCE_SHA_SHORT" ]; then
+            # The resume CI names the compressed artifact angelorscoelho_resume_<suffix>.pdf
+            PDF=$(find resume -maxdepth 2 -name "angelorscoelho_resume_*.pdf" 2>/dev/null | head -n1)
+          fi
+          if [ -z "$PDF" ]; then
+            PDF=$(find resume -maxdepth 2 -name 'resume.pdf' 2>/dev/null | head -n1)
+          fi
+          if [ -z "$PDF" ]; then
+            PDF=$(find resume -maxdepth 2 -name 'main.pdf' 2>/dev/null | head -n1)
+          fi
           if [ -z "$PDF" ]; then
             echo "No PDF found after build; aborting."; exit 1
           fi
+          echo "Using PDF: $PDF"
 
-          # Use the resume repo's own metadata (written by its CI with the correct
-          # source-commit SHA) instead of HEAD, which may be a CI bot commit.
-          if [ -f resume/resume-meta.json ]; then
-            RESUME_SHA=$(jq -r '.sha' resume/resume-meta.json)
-            RESUME_SHA_SHORT=$(jq -r '.shaShort' resume/resume-meta.json)
-          else
-            RESUME_SHA=$(git -C resume rev-parse HEAD)
-            RESUME_SHA_SHORT=$(git -C resume rev-parse --short HEAD)
-          fi
           BUILT_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
           mkdir -p src/assets
           cp "$PDF" src/assets/resume.pdf
 
-          # Write traceability metadata alongside the PDF
-          cat > src/assets/resume-meta.json <<EOF
+          # ── 4. Write traceability metadata alongside the PDF ──
+          # "sha" / "shaShort" always reflect the resume repo HEAD — the exact
+          # tree state the PDF was taken from.  "sourceSha" captures the human
+          # commit that triggered the resume CI (may equal sha when no CI bot
+          # commit exists).
+          cat > src/assets/resume-meta.json <<METAEOF
           {
             "sha": "${RESUME_SHA}",
             "shaShort": "${RESUME_SHA_SHORT}",
+            "sourceSha": "${SOURCE_SHA:-${RESUME_SHA}}",
+            "sourceShaShort": "${SOURCE_SHA_SHORT:-${RESUME_SHA_SHORT}}",
             "builtAt": "${BUILT_AT}",
             "resumeCommitUrl": "https://github.com/angelorscoelho/resume/commit/${RESUME_SHA}",
             "resumeWorkflowUrl": "https://github.com/angelorscoelho/resume/actions/workflows/build-and-publish-resume.yml"
           }
-          EOF
+          METAEOF
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

@@ -70,6 +70,12 @@ function runCmd(cmd, args, cwd) {
 }
 
 function findNewestPdf(folder) {
+  // Prefer the compressed/named artifact over the raw build output.
+  const named = fs.readdirSync(folder)
+    .filter(f => /^angelorscoelho_resume_.*\.pdf$/i.test(f))
+    .map(f => path.join(folder, f));
+  if (named.length) return named[0];
+
   let best = null;
   function walk(d) {
     const items = fs.readdirSync(d, { withFileTypes: true });
@@ -85,6 +91,62 @@ function findNewestPdf(folder) {
   }
   walk(folder);
   return best ? best.path : null;
+}
+
+/** Write resume-meta.json next to the PDF using git info from the resume source. */
+function writeResumeMeta(destDir, resumeSrcDir) {
+  const metaDest = path.join(destDir, 'resume-meta.json');
+  if (exists(metaDest)) {
+    console.log('resume-meta.json already exists in assets; skipping metadata generation.');
+    return;
+  }
+
+  // Try to read the metadata file written by the resume repo's own CI
+  const srcMeta = path.join(resumeSrcDir, 'resume-meta.json');
+  let sourceSha = '';
+  let sourceShaShort = '';
+  if (exists(srcMeta)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(srcMeta, 'utf8'));
+      sourceSha = parsed.sha || '';
+      // Always derive the short hash from the full SHA (first 8 chars)
+      // to use standard git conventions regardless of what the resume CI wrote.
+      sourceShaShort = sourceSha ? sourceSha.slice(0, 8) : '';
+    } catch (_) { /* ignore parse errors */ }
+  }
+
+  // Get HEAD SHA from the resume source's git history (authoritative)
+  let sha = '';
+  let shaShort = '';
+  const isGitRepo = exists(path.join(resumeSrcDir, '.git'));
+  if (isGitRepo) {
+    const full = spawnSync('git', ['-C', resumeSrcDir, 'rev-parse', 'HEAD'], { encoding: 'utf8' });
+    if (full.status === 0) sha = full.stdout.trim();
+    const short = spawnSync('git', ['-C', resumeSrcDir, 'rev-parse', '--short=8', 'HEAD'], { encoding: 'utf8' });
+    if (short.status === 0) shaShort = short.stdout.trim();
+  }
+
+  if (!sha && sourceSha) {
+    sha = sourceSha;
+    shaShort = sourceShaShort;
+  }
+  if (!sha) {
+    console.log('Could not determine resume commit SHA; skipping metadata generation.');
+    return;
+  }
+
+  const meta = {
+    sha,
+    shaShort,
+    sourceSha: sourceSha || sha,
+    sourceShaShort: sourceShaShort || shaShort,
+    builtAt: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
+    resumeCommitUrl: 'https://github.com/angelorscoelho/resume/commit/' + sha,
+    resumeWorkflowUrl: 'https://github.com/angelorscoelho/resume/actions/workflows/build-and-publish-resume.yml',
+  };
+
+  fs.writeFileSync(metaDest, JSON.stringify(meta, null, 2) + '\n');
+  console.log('Wrote resume-meta.json → sha:', shaShort);
 }
 
 async function build() {
@@ -112,6 +174,7 @@ async function build() {
     const dest = path.join(destDir, 'resume.pdf');
     fs.copyFileSync(prebuilt, dest);
     console.log('Found prebuilt PDF in resume source; copied to', dest);
+    writeResumeMeta(destDir, srcDir);
     if (clonedTemp) fs.rmSync(srcDir, { recursive: true, force: true });
     return;
   }
@@ -175,6 +238,7 @@ async function build() {
   const dest = path.join(destDir, 'resume.pdf');
   fs.copyFileSync(pdfPath, dest);
   console.log('Copied generated PDF to', dest);
+  writeResumeMeta(destDir, srcDir);
   if (clonedTemp) fs.rmSync(srcDir, { recursive: true, force: true });
 }
 
