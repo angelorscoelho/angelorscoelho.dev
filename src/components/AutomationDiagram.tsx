@@ -1,5 +1,6 @@
 import React from 'react';
 import { GitHubIcon, ExternalLinkIcon, VercelIcon } from './Icon';
+import resumeMeta from '../assets/resume-meta.json';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -210,6 +211,83 @@ export const AutomationDiagram: React.FC = () => (
         Automated handoff
       </span>
       <span>Badges reflect live CI status from GitHub</span>
+    </div>
+
+    {/* Version traceability card */}
+    <div className="rounded-xl border border-slate-700 bg-slate-800/40 px-5 py-4">
+      <h3 className="text-slate-200 font-semibold text-sm mb-2">Version Traceability</h3>
+      <p className="text-slate-400 text-xs leading-relaxed mb-3">
+        Every résumé PDF is built from a specific commit in the{' '}
+        <a href="https://github.com/angelorscoelho/resume" target="_blank" rel="noreferrer" className="text-teal-300 hover:underline">resume repo</a>.
+        The SHA is captured by the GitHub Actions workflow and written to a metadata file committed alongside the PDF
+        — so every deployed version is fully traceable end to end.
+      </p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        {/* Resume repo commit (HEAD when the PDF was pulled) */}
+        <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-3">
+          <span className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Resume repo commit</span>
+          <a
+            href={resumeMeta.resumeCommitUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="font-mono text-teal-300 hover:underline"
+          >
+            #{resumeMeta.shaShort}
+          </a>
+        </div>
+
+        {/* Source commit (the human commit that triggered the build) */}
+        {resumeMeta.sourceSha && resumeMeta.sourceSha !== resumeMeta.sha && (
+          <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-3">
+            <span className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Source commit</span>
+            <a
+              href={`https://github.com/angelorscoelho/resume/commit/${resumeMeta.sourceSha}`}
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono text-teal-300 hover:underline"
+            >
+              #{resumeMeta.sourceShaShort}
+            </a>
+          </div>
+        )}
+
+        {/* Built at */}
+        <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-3">
+          <span className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Built at</span>
+          <span className="font-mono text-slate-300">{resumeMeta.builtAt}</span>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-3 text-[10px] text-slate-500">
+        <a
+          href="https://github.com/angelorscoelho/resume/commits/main"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-1.5 hover:text-teal-300 transition-colors"
+        >
+          <GitHubIcon className="w-3 h-3" />
+          Resume commits
+        </a>
+        <a
+          href="https://github.com/angelorscoelho/angelorscoelho.dev/commits/main"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-1.5 hover:text-teal-300 transition-colors"
+        >
+          <GitHubIcon className="w-3 h-3" />
+          Portfolio commits
+        </a>
+        <a
+          href={resumeMeta.resumeWorkflowUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-1.5 hover:text-teal-300 transition-colors"
+        >
+          <ExternalLinkIcon className="w-3 h-3" />
+          CI workflow
+        </a>
+      </div>
     </div>
   </div>
 );
