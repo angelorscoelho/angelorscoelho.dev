@@ -51,9 +51,15 @@ jobs:
             echo "No PDF found after build; aborting."; exit 1
           fi
 
-          # Capture the exact commit SHA from the resume repo that produced this PDF
-          RESUME_SHA=$(git -C resume rev-parse HEAD)
-          RESUME_SHA_SHORT=$(git -C resume rev-parse --short HEAD)
+          # Use the resume repo's own metadata (written by its CI with the correct
+          # source-commit SHA) instead of HEAD, which may be a CI bot commit.
+          if [ -f resume/resume-meta.json ]; then
+            RESUME_SHA=$(jq -r '.sha' resume/resume-meta.json)
+            RESUME_SHA_SHORT=$(jq -r '.shaShort' resume/resume-meta.json)
+          else
+            RESUME_SHA=$(git -C resume rev-parse HEAD)
+            RESUME_SHA_SHORT=$(git -C resume rev-parse --short HEAD)
+          fi
           BUILT_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
           mkdir -p src/assets
