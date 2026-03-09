@@ -6,6 +6,15 @@ import { fileURLToPath } from 'url';
 
 function exists(p) { return fs.existsSync(p); }
 
+// The resume pipeline publishes and surfaces SHA suffixes as the last 8
+// characters of the full commit, so the portfolio mirrors that convention.
+function getShaSuffix(sha) {
+  if (typeof sha === 'string' && sha.length > 0 && sha.length < 8) {
+    console.warn('Received truncated SHA while deriving resume suffix:', sha);
+  }
+  return typeof sha === 'string' && sha.length >= 8 ? sha.slice(-8) : '';
+}
+
 function toolExists(name) {
   // run `command -v name` to detect POSIX binaries; return false if not found
   const r = spawnSync('command', ['-v', name], { stdio: 'ignore', shell: false });
@@ -96,10 +105,6 @@ function findNewestPdf(folder) {
 /** Write resume-meta.json next to the PDF using git info from the resume source. */
 function writeResumeMeta(destDir, resumeSrcDir) {
   const metaDest = path.join(destDir, 'resume-meta.json');
-  if (exists(metaDest)) {
-    console.log('resume-meta.json already exists in assets; skipping metadata generation.');
-    return;
-  }
 
   // Try to read the metadata file written by the resume repo's own CI
   const srcMeta = path.join(resumeSrcDir, 'resume-meta.json');
@@ -109,22 +114,18 @@ function writeResumeMeta(destDir, resumeSrcDir) {
     try {
       const parsed = JSON.parse(fs.readFileSync(srcMeta, 'utf8'));
       sourceSha = parsed.sha || '';
-      // Always derive the short hash from the full SHA (first 8 chars)
-      // to use standard git conventions regardless of what the resume CI wrote.
-      sourceShaShort = sourceSha ? sourceSha.slice(0, 8) : '';
+      sourceShaShort = getShaSuffix(sourceSha);
     } catch (_) { /* ignore parse errors */ }
   }
 
   // Get HEAD SHA from the resume source's git history (authoritative)
   let sha = '';
-  let shaShort = '';
   const isGitRepo = exists(path.join(resumeSrcDir, '.git'));
   if (isGitRepo) {
     const full = spawnSync('git', ['-C', resumeSrcDir, 'rev-parse', 'HEAD'], { encoding: 'utf8' });
     if (full.status === 0) sha = full.stdout.trim();
-    const short = spawnSync('git', ['-C', resumeSrcDir, 'rev-parse', '--short=8', 'HEAD'], { encoding: 'utf8' });
-    if (short.status === 0) shaShort = short.stdout.trim();
   }
+  let shaShort = getShaSuffix(sha);
 
   if (!sha && sourceSha) {
     sha = sourceSha;
@@ -153,15 +154,11 @@ async function build() {
   const destDir = path.join(fixedRoot, 'src', 'assets');
   const assetPdf = path.join(destDir, 'resume.pdf');
 
-  // if we already placed the PDF in assets earlier or checked it in, nothing
-  // further needs to happen (this duplicate check is minor but keeps
-  // behaviour consistent when build() is called directly).
-  if (exists(assetPdf)) {
-    console.log('resume.pdf already exists in assets; skipping resume build.');
+  // if we never obtained a source directory (clone failure or no env/submodule)
+  if (!srcDir && exists(assetPdf)) {
+    console.log('No resume source available; keeping existing resume assets.');
     return;
   }
-
-  // if we never obtained a source directory (clone failure or no env/submodule)
   if (!srcDir) {
     console.log('No resume source available; skipping resume build.');
     return;
