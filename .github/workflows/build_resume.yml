@@ -48,7 +48,7 @@ jobs:
         run: |
           # ── 1. Resolve the HEAD commit of the resume repo (always authoritative) ──
           RESUME_SHA=$(git -C resume rev-parse HEAD)
-          RESUME_SHA_SHORT=$(git -C resume rev-parse --short=8 HEAD)
+          RESUME_SHA_SHORT="${RESUME_SHA: -8}"
 
           # ── 2. Read source-commit info from resume-meta.json (if the resume CI
           #       wrote one).  The source SHA is the human commit that triggered
@@ -57,11 +57,10 @@ jobs:
           SOURCE_SHA_SHORT=""
           if [ -f resume/resume-meta.json ]; then
             SOURCE_SHA=$(jq -r '.sha // empty' resume/resume-meta.json)
-            # Always derive the short hash from the full SHA using standard git
-            # conventions (first 8 chars), since the resume CI may use a
-            # non-standard suffix.
+            # Match the published resume artifact suffix by using the last 8
+            # characters of the triggering commit SHA.
             if [ -n "$SOURCE_SHA" ]; then
-              SOURCE_SHA_SHORT="${SOURCE_SHA:0:8}"
+              SOURCE_SHA_SHORT="${SOURCE_SHA: -8}"
             fi
           fi
 
