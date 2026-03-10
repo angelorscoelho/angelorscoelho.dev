@@ -128,14 +128,8 @@ function App() {
                 <h2 className="text-sm font-bold uppercase tracking-widest text-slate-200 lg:sr-only">About</h2>
               </div>
               <SpotlightCard>
-                <p className="mb-4">
-                 {RESUME.about.split('\n\n')[0]}
-                </p>
-                <p className="mb-4 leading-relaxed">
-                  Appointed as the LEAN Champion at Bosch, I lead the modernization of work routines through custom automation and standardized CI/CD workflows. I am currently specializing in AI Agentic Workflows and proactively exploring AWS Cloud Solutions to architect resilient, future-ready systems.
-                </p>
                 <p className="leading-relaxed">
-                  With a solid history of delivering bespoke Full Stack solutions—from custom UI/UX workflows to high-performance backends—I am now focusing on the intersection of intelligent automation and cloud-native architecture.
+                  {RESUME.about}
                 </p>
               </SpotlightCard>
             </section>

@@ -2,9 +2,9 @@ import { ResumeData } from './types';
 
 export const RESUME: ResumeData = {
   name: "Ângelo Coelho",
-  title: "Software Engineer | LEAN Champion",
-  tagline: "Driving CI/CD automation, AI-assisted workflows & process optimization in industrial environments.",
-  about: "Software Engineer with 7+ years of experience delivering end-to-end solutions across industrial and enterprise environments. Specialized in architecting event-driven systems, implementing CI/CD infrastructure, and leading process optimization as a LEAN Champion at Bosch.",
+  title: "Senior Software Engineer",
+  tagline: "Specializing in Distributed Systems, Cloud Architecture, and Scalable Backend Solutions.",
+  about: "Senior Software Engineer with 7+ years of experience designing and delivering distributed, cloud-native systems that operate at scale. Expert in the Java/JVM ecosystem and AWS/Kubernetes environments, with a proven track record in high-concurrency backend architecture and event-driven infrastructure. Uniquely positioned to bridge complex backend systems with AI-driven integrations—from RAG pipelines to data-intensive applications—translating engineering depth into strategic product outcomes.",
   email: "angelorscoelho@gmail.com",
   phone: "+351 915 479 201",
   location: "Braga, Portugal",
