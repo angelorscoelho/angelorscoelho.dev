@@ -7,9 +7,11 @@
     "dev": "vite",
     "generate-images": "node generate-images.js",
     "update:resume": "git submodule update --init --remote resume || true",
+    "update:siemens": "git submodule update --init --remote siemens || true",
     "build:resume": "node scripts/build-resume.js",
-    "prebuild": "npm run generate-images && npm run update:resume && npm run build:resume",
-    "build": "npm run prebuild && tsc && vite build",
+    "build:siemens": "cd siemens/frontend && npm ci && npm run build && mkdir -p ../../dist/siemens && cp -r dist/* ../../dist/siemens/",
+    "prebuild": "npm run generate-images && npm run update:resume && npm run build:resume && npm run update:siemens",
+    "build": "npm run prebuild && tsc && vite build && npm run build:siemens",
     "preview": "vite preview"
   },
   "dependencies": {

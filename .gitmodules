@@ -1,3 +1,6 @@
 [submodule "resume"]
 	path = resume
 	url = https://github.com/angelorscoelho/resume.git
+[submodule "siemens"]
+	path = siemens
+	url = https://github.com/angelorscoelho/siemens.git
