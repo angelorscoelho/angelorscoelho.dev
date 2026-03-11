@@ -2,9 +2,9 @@ import { ResumeData } from './types';
 
 export const RESUME: ResumeData = {
   name: "Ângelo Coelho",
-  title: "Software Engineer | LEAN Champion",
-  tagline: "Driving CI/CD automation, AI-assisted workflows & process optimization in industrial environments.",
-  about: "Software Engineer with 7+ years of experience delivering end-to-end solutions across industrial and enterprise environments. Specialized in architecting event-driven systems, implementing CI/CD infrastructure, and leading process optimization as a LEAN Champion at Bosch.",
+  title: "Senior Software Engineer",
+  tagline: "Bridging robust software architecture with intelligent automation. Building scalable, event-driven systems and leveraging AI-assisted tooling to optimize engineering workflows, from initial system design to continuous delivery.",
+  about: "Senior Software Engineer with 7+ years delivering end-to-end enterprise solutions. Grounded in strong software architecture and design patterns, I have a solid track record in full-stack development (.NET, Laravel/Vue, Python), building resilient, event-driven systems and high-scale integrations. I drive engineering efficiency by implementing robust CI/CD pipelines and developing custom automation. My approach systematically streamlines workflows and eliminates manual friction, standardizing processes to boost overall team productivity and delivery speed. Passionate about the evolution of development lifecycles, I actively integrate AI-assisted tools into architecture planning, coding, and testing to accelerate execution. With a forward-looking mindset, I am currently expanding my expertise in cloud-native fundamentals (AWS), agentic workflows, and LLM orchestration to build smarter internal platforms and future-proof products.",
   email: "angelorscoelho@gmail.com",
   phone: "+351 915 479 201",
   location: "Braga, Portugal",
