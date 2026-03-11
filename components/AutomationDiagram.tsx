@@ -101,7 +101,14 @@ const NodeCard: React.FC<NodeProps> = ({ icon, title, subtitle, description, bad
 
       {/* CI badge */}
       {statusBadgeUrl && (
-        <img src={statusBadgeUrl} alt="CI status" className="relative z-10 h-5 rounded mt-1" loading="lazy" />
+        <a
+          href={statusBadgeUrl.endsWith('/badge.svg') ? statusBadgeUrl.slice(0, -'/badge.svg'.length) : statusBadgeUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="View workflow runs on GitHub Actions"
+        >
+          <img src={statusBadgeUrl} alt="CI status" className="relative z-10 h-5 rounded mt-1" loading="lazy" />
+        </a>
       )}
     </div>
   );
