@@ -11,7 +11,7 @@ export const CertificationCard: React.FC<CertificationCardProps> = ({ cert }) =>
   const cardRef = useRef<HTMLDivElement | HTMLAnchorElement>(null);
   useSpotlight(cardRef as React.RefObject<HTMLElement>);
 
-  const cardClasses = "group relative grid grid-cols-8 gap-4 transition-all p-3 rounded-lg -mx-3 border border-slate-800/50 bg-slate-900/90 hover:bg-slate-900 shadow-sm";
+  const cardClasses = "group relative grid grid-cols-8 gap-4 transition-all p-3 rounded-lg -mx-3 border border-slate-800/50 bg-slate-900/90 hover:bg-slate-900 shadow-sm text-left";
 
   // Render as anchor if URL exists, otherwise as div
   if (cert.url) {
