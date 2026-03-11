@@ -71,11 +71,18 @@ const NodeCard: React.FC<{ node: NodeData }> = ({ node }) => (
     {/* CI status badge */}
     {node.statusBadgeUrl && (
       <div className="mt-auto pt-1">
-        <img
-          src={node.statusBadgeUrl}
-          alt="GitHub Actions status"
-          className="h-5 rounded"
-        />
+        <a
+          href={node.statusBadgeUrl.endsWith('/badge.svg') ? node.statusBadgeUrl.slice(0, -'/badge.svg'.length) : node.statusBadgeUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="View workflow runs on GitHub Actions"
+        >
+          <img
+            src={node.statusBadgeUrl}
+            alt="GitHub Actions status"
+            className="h-5 rounded"
+          />
+        </a>
       </div>
     )}
   </div>
