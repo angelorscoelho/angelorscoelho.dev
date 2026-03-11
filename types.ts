@@ -35,7 +35,7 @@ export interface ResumeData {
   name: string;
   title: string;
   tagline: string;
-  about: string;
+  about: string[];
   email: string;
   phone: string;
   location: string;
