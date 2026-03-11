@@ -1,5 +1,8 @@
 import { ResumeData } from './types';
 
+const EMAIL_SUBJECT = "Opportunity Discussion";
+const EMAIL_BODY = "Hello Ângelo,\n\nI found your profile interesting. Could we schedule a quick talk to discuss X opportunity?\n\nBest regards,";
+
 export const RESUME: ResumeData = {
   name: "Ângelo Coelho",
   title: "Senior Software Engineer",
@@ -15,7 +18,7 @@ export const RESUME: ResumeData = {
   socials: {
     linkedin: "https://www.linkedin.com/in/angelorscoelho/",
     github: "https://github.com/angelorscoelho",
-    email: "mailto:angelorscoelho@gmail.com"
+    email: `mailto:angelorscoelho@gmail.com?subject=${encodeURIComponent(EMAIL_SUBJECT)}&body=${encodeURIComponent(EMAIL_BODY)}`
   },
   experience: [
     {
