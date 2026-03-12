@@ -48,9 +48,9 @@ function App() {
         <div className="lg:flex lg:justify-between lg:gap-12">
           
           {/* LEFT COLUMN: Sidebar */}
-          <header className="lg:sticky lg:top-0 lg:flex lg:max-h-screen lg:w-[35%] lg:flex-col lg:justify-between lg:py-24 lg:overflow-y-auto">
+          <header className="lg:sticky lg:top-0 lg:flex lg:max-h-screen lg:w-[35%] lg:flex-col lg:py-24">
             <div>
-              <div className="mb-8 block">
+              <div className="mb-4 block">
                 {/* 
                   NOTE: Assets are now imported from src/assets/ folder.
                   The import provides the correct path for both development and production builds.
@@ -59,18 +59,49 @@ function App() {
                 <ProfileImageModal />
               </div>
 
-              <h1 className="text-4xl font-bold tracking-tight text-slate-200 sm:text-5xl">
+              <h1 className="text-3xl font-bold tracking-tight text-slate-200 sm:text-4xl">
                 {RESUME.name}
               </h1>
-              <h2 className="mt-3 text-lg font-medium tracking-tight text-slate-200 sm:text-xl">
+              <h2 className="mt-2 text-base font-medium tracking-tight text-slate-200 sm:text-lg">
                 {RESUME.title}
               </h2>
-              <p className="mt-4 max-w-xs leading-normal text-slate-400">
+              <p className="mt-3 max-w-xs text-sm leading-normal text-slate-400">
                 {RESUME.tagline}
               </p>
+
+              <ul className="ml-1 mt-6 flex items-center" aria-label="Social media and resume">
+                <li className="mr-5">
+                  {/* 
+                    NOTE: Resume PDF is now imported from src/assets/.
+                    This ensures the correct path is used in both development and production.
+                  */}
+                  <a className="block hover:text-teal-300 transition-colors" href={resume} target="_blank" rel="noreferrer" title="View Résumé">
+                    <span className="sr-only">Résumé</span>
+                    <FileTextIcon className="h-6 w-6" />
+                  </a>
+                </li>
+                <li className="mr-5">
+                  <a className="block hover:text-slate-200 transition-colors" href={RESUME.socials.linkedin} target="_blank" rel="noreferrer">
+                    <span className="sr-only">LinkedIn</span>
+                    <LinkedInIcon className="h-6 w-6" />
+                  </a>
+                </li>
+                <li className="mr-5">
+                  <a className="block hover:text-slate-200 transition-colors" href={RESUME.socials.github} target="_blank" rel="noreferrer">
+                    <span className="sr-only">GitHub</span>
+                    <GitHubIcon className="h-6 w-6" />
+                  </a>
+                </li>
+                <li className="mr-5">
+                  <a className="block hover:text-slate-200 transition-colors" href={RESUME.socials.email} target="_blank" rel="noreferrer">
+                    <span className="sr-only">Email</span>
+                    <EmailIcon className="h-6 w-6" />
+                  </a>
+                </li>
+              </ul>
               
               <nav className="nav hidden lg:block" aria-label="In-page jump links">
-                <ul className="mt-16 w-max">
+                <ul className="mt-8 w-max">
                   {['About', 'Experience', 'Automation', 'Projects', 'Certifications'].map((item) => (
                     <li key={item}>
                       <button 
@@ -87,37 +118,6 @@ function App() {
                 </ul>
               </nav>
             </div>
-
-            <ul className="ml-1 mt-8 flex items-center" aria-label="Social media and resume">
-              <li className="mr-5">
-                {/* 
-                  NOTE: Resume PDF is now imported from src/assets/.
-                  This ensures the correct path is used in both development and production.
-                */}
-                <a className="block hover:text-teal-300 transition-colors" href={resume} target="_blank" rel="noreferrer" title="View Résumé">
-                  <span className="sr-only">Résumé</span>
-                  <FileTextIcon className="h-6 w-6" />
-                </a>
-              </li>
-              <li className="mr-5">
-                <a className="block hover:text-slate-200 transition-colors" href={RESUME.socials.linkedin} target="_blank" rel="noreferrer">
-                  <span className="sr-only">LinkedIn</span>
-                  <LinkedInIcon className="h-6 w-6" />
-                </a>
-              </li>
-              <li className="mr-5">
-                <a className="block hover:text-slate-200 transition-colors" href={RESUME.socials.github} target="_blank" rel="noreferrer">
-                  <span className="sr-only">GitHub</span>
-                  <GitHubIcon className="h-6 w-6" />
-                </a>
-              </li>
-              <li className="mr-5">
-                <a className="block hover:text-slate-200 transition-colors" href={RESUME.socials.email} target="_blank" rel="noreferrer">
-                  <span className="sr-only">Email</span>
-                  <EmailIcon className="h-6 w-6" />
-                </a>
-              </li>
-            </ul>
           </header>
 
           {/* RIGHT COLUMN: Content */}
