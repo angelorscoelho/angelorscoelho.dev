@@ -65,7 +65,7 @@ function App() {
               <h2 className="mt-2 text-base font-medium tracking-tight text-slate-200 sm:text-lg">
                 {RESUME.title}
               </h2>
-              <p className="mt-3 max-w-xs text-sm leading-normal text-slate-400">
+              <p className="mt-3 text-sm lg:text-base leading-normal text-slate-400">
                 {RESUME.tagline}
               </p>
 
@@ -129,7 +129,7 @@ function App() {
               </div>
               <SpotlightCard>
                 {RESUME.about.map((paragraph, i) => (
-                  <p key={i} className={i < RESUME.about.length - 1 ? 'mb-4' : undefined}>
+                  <p key={i} className={`text-sm lg:text-base${i < RESUME.about.length - 1 ? ' mb-4' : ''}`}>
                     {paragraph}
                   </p>
                 ))}
