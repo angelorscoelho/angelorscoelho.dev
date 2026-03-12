@@ -531,9 +531,9 @@ export default async function handler(req: any, res: any) {
     `QUESTION (provide a complete, well-structured answer referencing the user_technical_manual and past_maintenance_history_notes above): ${query}`;
 
   const body = {
-    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.2, maxOutputTokens: 2048, candidateCount: 1 },
+    generationConfig: { temperature: 0.2, maxOutputTokens: 8192, candidateCount: 1 },
     safetySettings: [
       { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
       { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
@@ -588,9 +588,17 @@ export default async function handler(req: any, res: any) {
         return;
       }
 
-      const answer =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "I'm sorry, I couldn't generate a response.";
+      const parts: Array<{ text?: string; thought?: boolean }> =
+        data?.candidates?.[0]?.content?.parts ?? [];
+      const answer = parts.find((p) => !p.thought && p.text)?.text?.trim() ?? '';
+      if (!answer) {
+        const finishReason = data?.candidates?.[0]?.finishReason ?? 'unknown';
+        console.warn(
+          `[api/ask-assistant] Model ${modelId} returned empty content (finishReason: ${finishReason}), trying next…`,
+        );
+        lastError = data;
+        continue;
+      }
 
       res.status(200).json({
         answer,
