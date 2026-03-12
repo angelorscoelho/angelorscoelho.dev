@@ -2,15 +2,16 @@
 // Same architecture as angelorscoelho.dev/api/chat.ts
 // GOOGLE_API_KEY is read exclusively server-side; the key is never exposed to the browser.
 
-// ── Mock Knowledge Base ────────────────────────────────────────────────────────
-const MAINTENANCE_MANUAL_EXCERPT = `
+// ── Equipment-Specific Knowledge Base ─────────────────────────────────────────
+
+// Gas Turbine Manual (SGT-series)
+const GAS_TURBINE_MANUAL = `
 SIEMENS ENERGY SGT-SERIES GAS TURBINE — MAINTENANCE MANUAL (EXCERPT)
-Document Ref: SE-GT-MM-4200 | Revision 7 | Confidential — PoC Demonstration Only
+Document Ref: SE-GT-MM-4200 | Revision 7 | Applies to: SGT-100, SGT-300, SGT-400, SGT-600, SGT-700, SGT-750, SGT-800, SGT-A65, SGT5-4000F, SGT5-8000H, SGT6-5000F, SGT6-8000H
 
 === SECTION 4: INSPECTION INTERVALS ===
 Hot Gas Path (HGP) Inspection: Every 8,000 Equivalent Operating Hours (EOH) or 900 starts.
-  Components inspected: combustion liners, transition pieces, first-stage nozzles and blades,
-  turbine shrouds.
+  Components inspected: combustion liners, transition pieces, first-stage nozzles and blades, turbine shrouds.
 Major Overhaul: Every 24,000 EOH or 2,400 starts (whichever comes first).
 Combustion Inspection: Every 4,000 EOH or 450 starts.
   Includes: fuel nozzle cleaning, cross-fire tube inspection, liner replacement if wear > 20%.
@@ -18,7 +19,7 @@ Combustion Inspection: Every 4,000 EOH or 450 starts.
 === SECTION 7: VIBRATION THRESHOLDS ===
 Bearing Vibration Alert Levels (peak-to-peak, mm/s RMS):
   • Normal operation : < 2.5 mm/s
-  • Warning (reduce load)  : 2.5 – 5.0 mm/s
+  • Warning (reduce load) : 2.5 – 5.0 mm/s
   • Trip / Emergency shutdown : > 5.0 mm/s
 Common causes of high vibration:
   - Rotor imbalance (often after blade replacement)
@@ -91,94 +92,357 @@ FAULT: High vibration with high exhaust temperature (dual exceedance)
   Emergency response: Do not trip; execute controlled coast-down to protect bearings.
   Post-shutdown: Full borescope inspection + NDT of all hot-section components.
 
-FAULT: Rapid load loss with alarm
-  Likely cause: Fuel supply interruption, inlet pressure drop, or control system fault.
-  Action: Check fuel header pressure. Review control system logs. Restart only after root cause identified.
+=== SECTION 22: ACTION PLAN TEMPLATES ===
 
-=== SECTION 22: RAG ACTION PLAN TEMPLATES ===
+ACTION PLAN — NOK (Critical) STATUS:
+Step 1 [0–15 min]: Reduce load to 50% rated capacity. Notify shift supervisor and OEM hotline.
+Step 2 [15–30 min]: Cross-check critical reading against redundant sensors. If confirmed, initiate controlled shutdown.
+Step 3 [0–24 h]: Review past_maintenance_history_notes for recent maintenance that may have introduced the fault.
+Step 4 [24–48 h]: Perform visual and borescope inspection per user_technical_manual Section 7 (vibration) or Section 9 (temperature).
+Step 5 [2–7 days]: Complete root cause analysis. Apply corrective maintenance.
+Step 6 [Return-to-service]: Verify repair quality through graduated load test.
 
-ACTION PLAN TEMPLATE — NOK (Critical) STATUS:
-This template applies when turbine parameters exceed critical thresholds.
-Required inputs: user_technical_manual (unit-specific procedures), past_maintenance_history_notes (recent work history).
-Step 1 [IMMEDIATE — 0–15 min]: Reduce load to 50% rated capacity. Notify shift supervisor and OEM hotline.
-Step 2 [IMMEDIATE — 15–30 min]: Cross-check critical reading against redundant sensors. If confirmed, initiate controlled shutdown.
-Step 3 [SHORT-TERM — 0–24 h]: Review past_maintenance_history_notes for recent maintenance that may have introduced the fault.
-Step 4 [SHORT-TERM — 24–48 h]: Perform visual and borescope inspection per user_technical_manual Section 7 (vibration) or Section 9 (temperature).
-Step 5 [MEDIUM-TERM — 2–7 days]: Complete root cause analysis. Apply corrective maintenance. Update past_maintenance_history_notes with findings.
-Step 6 [RETURN-TO-SERVICE]: Verify repair quality through graduated load test per user_technical_manual startup and commissioning section.
-
-ACTION PLAN TEMPLATE — RISK (Warning) STATUS:
-This template applies when parameters are in the warning zone but below critical thresholds.
-Required inputs: user_technical_manual, past_maintenance_history_notes.
-Step 1 [MONITOR — Immediate]: Increase monitoring frequency (every 15 min readings). Set additional alarm at 80% of critical threshold.
-Step 2 [REVIEW — Within 4 h]: Review past_maintenance_history_notes for parameter trends over last 30 days.
-Step 3 [INVESTIGATE — Within 24 h]: Perform non-invasive diagnostics per user_technical_manual.
-Step 4 [PLAN — Within 48 h]: Schedule planned maintenance outage if trend is degrading.
-Step 5 [CORRECTIVE — At planned outage]: Perform targeted inspection. Update past_maintenance_history_notes.
-
-=== SECTION 25: PAST MAINTENANCE HISTORY INTEGRATION ===
-When reviewing past_maintenance_history_notes, check for:
-  - Recent bearing replacements or adjustments (correlate with vibration changes)
-  - Compressor wash history (correlate with efficiency and exhaust temperature trends)
-  - Fuel nozzle replacements (correlate with combustion temperature spread)
-  - Blade repairs or coatings (correlate with exhaust temperature and efficiency)
-  - Seal replacements (correlate with shaft speed and efficiency)
-  - Any near-miss events or previous alarms of the same parameter
-  - Hours since last major overhaul vs. recommended interval
+ACTION PLAN — RISK (Warning) STATUS:
+Step 1 [Immediate]: Increase monitoring frequency (every 15 min readings).
+Step 2 [Within 4 h]: Review past_maintenance_history_notes for parameter trends over last 30 days.
+Step 3 [Within 24 h]: Perform non-invasive diagnostics per user_technical_manual.
+Step 4 [Within 48 h]: Schedule planned maintenance outage if trend is degrading.
+Step 5 [At planned outage]: Perform targeted inspection. Update maintenance records.
 `;
 
-const PAST_MAINTENANCE_HISTORY_NOTES = `
-FLEET MAINTENANCE HISTORY — SUMMARY NOTES (Last 90 Days)
-Generated: Auto-updated by CMMS | Use with: user_technical_manual SE-GT-MM-4200
+// Steam Turbine Manual (SST-series)
+const STEAM_TURBINE_MANUAL = `
+SIEMENS ENERGY SST-SERIES STEAM TURBINE — MAINTENANCE MANUAL (EXCERPT)
+Document Ref: SE-ST-MM-3100 | Revision 5 | Applies to: SST-300, SST-400, SST-600, SST-800
 
-Common recent findings across fleet:
-  - 3 units: Compressor blade tip erosion found during inspections; accelerated by dusty inlet conditions.
+=== SECTION 3: INSPECTION INTERVALS ===
+Hot Section Inspection (HSI): Every 8,000 EOH or annually (whichever comes first).
+  Components: HP turbine blades, nozzles, seals, stop/control valves.
+Major Overhaul: Every 20,000 EOH or every 4 years (whichever comes first).
+Steam System Inspection: Annually — main steam stop valves, reheat valves, extraction valves.
+Governor & Overspeed Protection: Calibration and trip test annually.
+
+=== SECTION 6: VIBRATION THRESHOLDS ===
+Shaft Vibration Alert Levels (mm/s RMS, measured at bearing housings):
+  • Normal operation : < 2.3 mm/s
+  • Warning (increased monitoring) : 2.3 – 4.5 mm/s
+  • Alarm (reduce load) : 4.5 – 7.1 mm/s
+  • Trip / Emergency shutdown : > 7.1 mm/s
+Common causes of high vibration in steam turbines:
+  - Journal bearing wear or oil film instability (oil whirl / oil whip)
+  - Rotor bow due to uneven thermal expansion at startup
+  - Blade deposit build-up causing rotor imbalance
+  - Seal rub from differential thermal growth
+  - Coupling misalignment or gear defects
+  - Steam quality issues (carry-over, water ingestion)
+Corrective actions:
+  1. Reduce steam admission gradually to < 70% of rated load.
+  2. Monitor vibration trend over 30 minutes. If declining, maintain reduced load.
+  3. If stable or increasing above 5.0 mm/s, initiate a controlled coast-down.
+  4. Inspect journal bearings 1–4 for oil supply and clearance.
+  5. Perform rotor dynamic balance check at next outage.
+  6. Verify steam quality (carry-over, condensate chemistry).
+
+=== SECTION 8: STEAM INLET TEMPERATURE & PRESSURE ===
+Normal steam inlet temperature range: varies by model (see nameplate data).
+  SST-300: HP steam 70–160 bar / 430–540°C backpressure design.
+  SST-400: HP steam 40–140 bar / 420–530°C extraction/condensing.
+  SST-600: HP steam 120–160 bar / 540–560°C extraction/condensing.
+  SST-800: HP steam 160–165 bar / 560–565°C high-pressure design.
+Warning threshold: Inlet temperature > 10°C above rated; sustained > 5 minutes.
+Emergency trip: Inlet temperature > 20°C above rated nameplate value.
+Common causes of elevated steam temperature:
+  - Boiler superheat control valve malfunction
+  - Attemperation (desuperheater) spray system failure
+  - Boiler control loop deviation or DCS fault
+  - Increased furnace heat load
+Corrective actions:
+  1. Check boiler superheat control valve position and DCS setpoint.
+  2. Verify attemperation spray water flow and control valve operation.
+  3. Reduce steam generation by 10% and monitor temperature recovery.
+  4. If temperature remains elevated, coordinate with boiler operators for load reduction.
+  5. Initiate controlled shutdown if temperature exceeds emergency trip level.
+
+=== SECTION 11: LUBRICATION SYSTEM ===
+Lube oil specification: ISO VG 46 turbine oil (some models VG 32 — see nameplate).
+Oil change interval: 4,000 EOH or annually.
+Bearing inlet temperature limits: 40°C minimum, 85°C maximum.
+Low oil pressure trip: < 0.8 bar (abs) at main header.
+Oil analysis: Sample quarterly for viscosity, acid number, and metal content.
+
+=== SECTION 14: STEAM QUALITY REQUIREMENTS ===
+Cation conductivity: < 0.15 μS/cm (alarm > 0.20 μS/cm).
+Sodium: < 5 ppb (alarm > 10 ppb).
+Silica: < 20 ppb.
+Dissolved oxygen: < 10 ppb in feedwater.
+Poor steam quality causes: blade erosion, deposit formation, stress corrosion cracking.
+
+=== SECTION 17: COMMON FAULT PATTERNS ===
+FAULT: Elevated steam temperature (> 10°C above rated)
+  Likely cause: Boiler control deviation, attemperation failure.
+  Immediate action: Notify boiler operators. Reduce load 10–15%. Check DCS setpoints.
+  Follow-up: Verify superheat control valve calibration and attemperation spray.
+
+FAULT: Gradual vibration increase
+  Likely cause: Blade deposit, bearing wear, or rotor thermal bow.
+  Action: Schedule offline deposit removal. Increase monitoring to hourly.
+
+FAULT: Sudden vibration increase
+  Likely cause: Blade liberation, bearing failure, water ingestion.
+  Immediate action: Trip turbine if > 7 mm/s. Inspect for water carry-over.
+
+FAULT: Low shaft speed / load loss
+  Likely cause: Steam supply interruption, governor fault, extraction valve trip.
+  Action: Check steam header pressure, governor control, and valve positions.
+
+=== SECTION 20: ACTION PLAN TEMPLATES ===
+
+ACTION PLAN — NOK (Critical) STATUS:
+Step 1 [0–15 min]: Reduce steam load to 50%. Notify shift supervisor.
+Step 2 [15–30 min]: Cross-check with redundant sensors. Initiate controlled coast-down if confirmed.
+Step 3 [0–24 h]: Review maintenance history for recent work on affected systems.
+Step 4 [24–48 h]: Borescope/visual inspection of hot section and bearings.
+Step 5 [2–7 days]: Root cause analysis and corrective action.
+Step 6 [Return-to-service]: Steam run-up test with staged load increase.
+
+ACTION PLAN — RISK (Warning) STATUS:
+Step 1 [Immediate]: Increase parameter monitoring to every 15 min.
+Step 2 [Within 4 h]: Review maintenance history for recent work and trends.
+Step 3 [Within 24 h]: Non-invasive diagnostics (oil analysis, vibration analysis).
+Step 4 [Within 48 h]: Schedule outage if trend is degrading.
+Step 5 [At planned outage]: Targeted inspection and maintenance record update.
+`;
+
+// Generator Manual (SGen-series)
+const GENERATOR_MANUAL = `
+SIEMENS ENERGY SGEN-SERIES SYNCHRONOUS GENERATOR — MAINTENANCE MANUAL (EXCERPT)
+Document Ref: SE-GEN-MM-2800 | Revision 4 | Applies to: SGen-100A, SGen-1000A
+
+=== SECTION 3: INSPECTION INTERVALS ===
+Annual Inspection: Stator winding, rotor, cooling system, exciter diodes.
+Major Overhaul: Every 5–6 years or 40,000 EOH (whichever comes first).
+  Includes: Stator re-wedging, rotor balance, insulation system assessment.
+Bearing Service: Every 2–3 years — vibration analysis, oil change, clearance check.
+Hydrogen System: Annual purity and pressure test; gas dryer replacement every 2 years (H₂-cooled models).
+
+=== SECTION 6: VIBRATION THRESHOLDS ===
+Generator Bearing Vibration Alert Levels (mm/s RMS):
+  • Normal operation : < 1.5 mm/s
+  • Warning (investigate) : 1.5 – 3.0 mm/s
+  • Alarm (reduce load) : 3.0 – 5.0 mm/s
+  • Trip / Emergency shutdown : > 5.0 mm/s
+Common causes of generator vibration:
+  - Rotor imbalance (often from partial conductor loss or rotor deposits)
+  - Journal bearing wear or misalignment
+  - Coupling misalignment with prime mover
+  - Electrical unbalance (negative sequence current)
+  - Stator core looseness
+Corrective actions:
+  1. Check bearing temperature and lube oil flow immediately.
+  2. Reduce excitation if electrical unbalance is suspected.
+  3. Perform vibration spectrum analysis to distinguish mechanical vs. electrical cause.
+  4. If bearing temperature is rising, trip generator and inspect bearing.
+  5. Schedule offline rotor balance and bearing clearance check.
+
+=== SECTION 8: THERMAL MONITORING ===
+Stator winding temperature: Normal < 105°C (Class F insulation — alarm 120°C, trip 130°C).
+Rotor winding temperature (by resistance): Normal < 100°C, alarm 115°C.
+Hydrogen cooler outlet temperature (H₂-cooled): Normal 35–45°C, alarm > 55°C.
+Air cooler outlet temperature (air-cooled): Normal 40–60°C, alarm > 80°C.
+Bearing oil outlet temperature: Normal 60–75°C, alarm > 85°C.
+Elevated winding temperature causes:
+  - Cooling system failure (H₂ pressure loss, cooler fouling)
+  - Overload operation
+  - Insulation degradation
+  - Stator ventilation blockage
+
+=== SECTION 11: INSULATION MONITORING ===
+Insulation resistance (IR): Measure annually at 1,000 V DC (stator winding).
+  Acceptable IR: > 200 MΩ (new limit), > 100 MΩ (service limit at 40°C).
+  Polarization Index (PI = IR₁₀/IR₁): > 2.0 acceptable, < 1.5 indicates moisture/contamination.
+Partial Discharge (PD): Annual PD test. Trending increase > 50% year-on-year warrants investigation.
+  Elevated PD causes: End-winding delamination, slot discharge, contamination.
+
+=== SECTION 14: HYDROGEN SYSTEM (H₂-COOLED MODELS) ===
+Normal H₂ pressure: 3.0–4.5 bar (model-dependent — check nameplate).
+H₂ purity: > 98% (alarm < 96%, trip < 94%).
+H₂ leak rate: < 3 m³/day acceptable; > 10 m³/day investigate seal integrity.
+Seal oil differential pressure: 0.3–0.5 bar above H₂ pressure.
+Annual H₂ system test: Pressure test, purity verification, seal oil pump check.
+
+=== SECTION 17: COMMON FAULT PATTERNS ===
+FAULT: Gradual insulation resistance decrease
+  Likely cause: Moisture ingress, contamination, or thermal aging.
+  Action: Dry-out procedure (see Section 11.3). Partial discharge test.
+
+FAULT: Elevated winding temperature
+  Likely cause: Cooling system fault or overload.
+  Immediate action: Verify cooling system flow. Reduce load 10–15% if temperature > alarm.
+
+FAULT: Generator vibration increase
+  Likely cause: Rotor imbalance or bearing wear.
+  Action: Vibration spectrum analysis. Check bearing temperatures.
+
+FAULT: H₂ purity decreasing (H₂-cooled models)
+  Likely cause: Air ingress through shaft seals or cooler leaks.
+  Action: Verify seal oil differential pressure. Locate and repair leak.
+
+=== SECTION 20: ACTION PLAN TEMPLATES ===
+
+ACTION PLAN — NOK (Critical) STATUS:
+Step 1 [0–15 min]: Reduce generator output. Notify shift supervisor.
+Step 2 [15–30 min]: Confirm with redundant monitoring. Trip if winding or bearing temp at limit.
+Step 3 [0–24 h]: Review maintenance history for recent work on affected systems.
+Step 4 [24–48 h]: Thermal/vibration analysis; insulation resistance test if winding issue.
+Step 5 [2–7 days]: Root cause analysis and corrective maintenance.
+Step 6 [Return-to-service]: Insulation check, air/H₂ leak test, graduated load test.
+
+ACTION PLAN — RISK (Warning) STATUS:
+Step 1 [Immediate]: Increase monitoring frequency for affected parameters.
+Step 2 [Within 4 h]: Review maintenance records and trends.
+Step 3 [Within 24 h]: Diagnostic tests (insulation resistance, vibration spectrum, oil analysis).
+Step 4 [Within 48 h]: Schedule planned outage if trend is degrading.
+`;
+
+// Per-equipment-type maintenance history summaries
+const GAS_TURBINE_MAINTENANCE_HISTORY = `
+GAS TURBINE FLEET — MAINTENANCE HISTORY SUMMARY (Last 90 Days)
+Applies to: SGT-series gas turbines
+
+Common recent findings:
+  - 3 units: Compressor blade tip erosion found during HGP inspections; accelerated by dusty inlet conditions.
   - 2 units: Bearing #3 oil supply restrictor partially blocked; cleared during planned maintenance.
-  - 4 units: Fuel nozzle coking on units operating on natural gas with high aromatic content; nozzles cleaned.
-  - 1 unit: Exhaust thermocouple #7 replaced due to calibration drift of +18°C.
+  - 4 units: Fuel nozzle coking on units operating on high-aromatic natural gas; nozzles cleaned.
+  - 1 unit: Exhaust thermocouple replaced due to calibration drift of +18°C.
   - 2 units: Inlet filter differential pressure elevated; filters replaced ahead of schedule.
+  - 1 unit (GT-04): Bearing #2 severe oil film failure at 31,200 h. Emergency shutdown. Full overhaul initiated.
+  - 1 unit (GT-12): Simultaneous vibration (7.9 mm/s) and exhaust temp (642°C) exceedance. Emergency shutdown.
 
 Trending observations:
-  - Fleet-wide exhaust temperature creeping +5°C above baseline over last 60 days; attributed to seasonal ambient temperature increase.
-  - Bearing vibration on units with > 20,000 EOH showing gradual upward trend; proactive bearing inspection scheduled.
+  - Fleet-wide exhaust temperature trending +5°C above baseline over last 60 days (seasonal ambient).
+  - Bearing vibration on units > 20,000 EOH showing gradual upward trend; proactive inspections scheduled.
+  - Compressor efficiency declining on units operating in dusty environments; online wash intervals reduced.
 
 Spare parts availability:
-  - Combustion liners (Type A/B): 8 sets in regional warehouse (Houston).
+  - Combustion liners (Type A/B): 8 sets — regional warehouse (Houston).
   - Bearing assemblies (journal type): 12 sets available.
-  - Fuel nozzle assemblies: 24 sets (all models).
+  - Fuel nozzle assemblies: 24 sets (all SGT models).
 
-OEM service bulletins active:
-  - SB-SGT-2024-07: Inspect transition piece cooling holes at next combustion inspection on units > 8,000 EOH.
-  - SB-SGT-2025-03: Lubrication system filter bypass valve check on SGT-series with > 15,000 EOH.
+OEM service bulletins:
+  - SB-SGT-2024-07: Inspect transition piece cooling holes at next CI on units > 8,000 EOH.
+  - SB-SGT-2025-03: Lubrication system filter bypass valve check on SGT-series > 15,000 EOH.
 `;
 
-const SYSTEM_PROMPT =
-  'You are an expert gas turbine and steam turbine maintenance engineer at Siemens Energy. ' +
-  'You have access to the Siemens Energy maintenance manual (user_technical_manual) and ' +
-  'recent fleet maintenance history notes (past_maintenance_history_notes), both of which ' +
-  'are provided in the context below. ' +
-  'When the question involves a RISK or NOK status alert, always produce a structured action plan ' +
-  'that explicitly references both the user_technical_manual procedures and the past_maintenance_history_notes. ' +
-  'Answer using ONLY the information in the provided context. If additional information is needed, ' +
-  'state clearly what should be checked in the user_technical_manual or CMMS. ' +
-  'Be concise, precise, and use engineering terminology appropriate for a field maintenance technician. ' +
-  'Format action plans as numbered steps with estimated timeframes.';
+const STEAM_TURBINE_MAINTENANCE_HISTORY = `
+STEAM TURBINE FLEET — MAINTENANCE HISTORY SUMMARY (Last 90 Days)
+Applies to: SST-series steam turbines
+
+Common recent findings:
+  - 1 unit (ST-01 / SST-400): Bearing #3 oil film breakdown at 23,810 h. Elevated metal particles. 48-h replacement window.
+  - 1 unit (ST-04 / SST-300): Steam inlet temperature elevated 16°C above normal. Boiler superheat valve deviation detected.
+  - 2 units: Annual steam system inspections completed — stop valve seat wear acceptable; strainer mesh cleaned.
+  - 1 unit: Annual governor calibration and overspeed trip test — all parameters in spec.
+  - 1 unit (ST-02 / SST-600): Hot section inspection at 12,000 h — blades within creep limits; journal bearing inserts replaced.
+
+Trending observations:
+  - Steam turbine bearing vibration stable fleet-wide; no upward trend detected.
+  - Steam quality (cation conductivity) within IAPWS limits across all units.
+  - Units in CHP (combined heat & power) mode showing extraction valve wear — schedule calibration.
+
+Spare parts availability:
+  - Journal bearing inserts: 6 sets available.
+  - HP turbine sealing strips: 4 sets — regional warehouse.
+  - Steam stop valve packing sets: 3 sets available.
+
+OEM service bulletins:
+  - SB-SST-2024-04: Inspect condensate pump seals on SST-400 and SST-600 units > 10,000 EOH.
+  - SB-SST-2025-01: Gland seal strip inspection on SST-series at next planned outage.
+`;
+
+const GENERATOR_MAINTENANCE_HISTORY = `
+GENERATOR FLEET — MAINTENANCE HISTORY SUMMARY (Last 90 Days)
+Applies to: SGen-series synchronous generators
+
+Common recent findings:
+  - 1 unit (GEN-01 / SGen-1000A): Stator winding insulation resistance 1,200 MΩ — excellent. PD activity nil.
+  - 1 unit (GEN-02 / SGen-100A): Stator re-wedging at 7,200 h. Rotor balance verified. Exciter diodes replaced.
+  - All units: Annual bearing vibration trending within normal limits (0.45–0.61 mm/s).
+  - All units: H₂ purity 99.8% (GEN-01) — well above 98% minimum.
+
+Trending observations:
+  - No insulation degradation trends detected on any generator in fleet.
+  - Lube oil temperatures stable; no cooler fouling observed.
+
+Spare parts availability:
+  - Exciter diode sets: 4 complete sets in stock.
+  - Journal bearing inserts (generator): 4 sets available.
+  - H₂ shaft seal assemblies: 2 sets available (SGen-1000A compatible).
+
+OEM service bulletins:
+  - SB-SGEN-2024-02: Annual H₂ seal oil differential pressure verification on SGen-1000A units.
+`;
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-const ALERT_KEYWORDS = [
-  'nok', 'risk', 'critical', 'emergency', 'alarm', 'alert', 'action plan',
-  'vibration', 'temperature', 'exhaust', 'bearing', 'shutdown', 'diagnostic',
-];
+// Detect equipment type from query and turbine context
+function detectEquipmentType(query: string, turbineType?: string): 'gas_turbine' | 'steam_turbine' | 'generator' {
+  const combined = `${query} ${turbineType || ''}`.toLowerCase();
+  if (
+    combined.includes('sst') ||
+    combined.includes('steam turbine') ||
+    combined.includes('steam') ||
+    /\bst-\d/.test(combined)
+  ) return 'steam_turbine';
+  if (
+    combined.includes('sgen') ||
+    combined.includes('generator') ||
+    combined.includes('synchronous') ||
+    /\bgen-\d/.test(combined)
+  ) return 'generator';
+  // Default: gas turbine (covers SGT, GT-xx, and general turbine questions)
+  return 'gas_turbine';
+}
+
+function selectManualAndHistory(equipmentType: string): { manual: string; history: string; docRef: string } {
+  if (equipmentType === 'steam_turbine') return {
+    manual: STEAM_TURBINE_MANUAL,
+    history: STEAM_TURBINE_MAINTENANCE_HISTORY,
+    docRef: 'SE-ST-MM-3100',
+  };
+  if (equipmentType === 'generator') return {
+    manual: GENERATOR_MANUAL,
+    history: GENERATOR_MAINTENANCE_HISTORY,
+    docRef: 'SE-GEN-MM-2800',
+  };
+  return {
+    manual: GAS_TURBINE_MANUAL,
+    history: GAS_TURBINE_MAINTENANCE_HISTORY,
+    docRef: 'SE-GT-MM-4200',
+  };
+}
+
+const SYSTEM_PROMPT =
+  'You are an expert Siemens Energy equipment maintenance engineer specializing in gas turbines, steam turbines, and generators. ' +
+  'You are provided with the correct unit-specific maintenance manual (user_technical_manual) and the maintenance history notes ' +
+  '(past_maintenance_history_notes) that match the equipment type referenced in the question. ' +
+  'Use ONLY the provided context to answer. Always reference the specific manual section numbers and history findings in your response. ' +
+  'When the question involves a RISK or NOK status alert, produce a structured numbered action plan ' +
+  'that explicitly cites both the user_technical_manual and the past_maintenance_history_notes. ' +
+  'If additional information would be needed for a complete answer, state clearly what to look up in the user_technical_manual or CMMS. ' +
+  'Be precise, engineering-accurate, and use terminology appropriate for a field maintenance technician. ' +
+  'Format responses with clear sections and numbered steps where applicable. Do not truncate your response.';
 
 const PREFERRED_MODELS = [
+  'gemini-2.5-pro-preview-06-05',
+  'gemini-2.5-pro-preview-05-06',
+  'gemini-2.5-pro-preview-03-25',
+  'gemini-2.5-pro',
   'gemini-2.5-flash',
-  'gemini-2.5-flash-lite',
+  'gemini-2.5-flash-preview-05-20',
   'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
-  'gemini-pro',
   'gemini-1.5-pro',
+  'gemini-1.5-flash',
+  'gemini-pro',
 ];
 
 const listAvailableModels = async (apiKey: string): Promise<string[]> => {
@@ -218,7 +482,18 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const { query }: { query: string } = req.body;
+  const { query, turbineContext }: {
+    query: string;
+    turbineContext?: {
+      id?: string;
+      name?: string;
+      type?: string;
+      location?: string;
+      manualUrl?: string;
+      maintenanceHistory?: any[];
+    };
+  } = req.body;
+
   if (!query || typeof query !== 'string') {
     res.status(400).json({ error: "Missing or invalid 'query' field in request body." });
     return;
@@ -231,15 +506,34 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const isAlertQuery = ALERT_KEYWORDS.some((kw) => query.toLowerCase().includes(kw));
-  const prompt = isAlertQuery
-    ? `[user_technical_manual]\n${MAINTENANCE_MANUAL_EXCERPT}\n\n[past_maintenance_history_notes]\n${PAST_MAINTENANCE_HISTORY_NOTES}\n\nQUESTION (requires action plan using both user_technical_manual and past_maintenance_history_notes): ${query}`
-    : `[user_technical_manual]\n${MAINTENANCE_MANUAL_EXCERPT}\n\nQUESTION: ${query}`;
+  // Select the correct manual and history for the equipment type mentioned in the query
+  const equipmentType = detectEquipmentType(query, turbineContext?.type);
+  const { manual, history, docRef } = selectManualAndHistory(equipmentType);
+
+  // Build per-equipment maintenance history section if frontend supplies records
+  let specificHistorySection = '';
+  if (turbineContext?.maintenanceHistory && turbineContext.maintenanceHistory.length > 0) {
+    const records = turbineContext.maintenanceHistory.slice(0, 6).map((r: any) => {
+      const date = (r.timestamp || '').slice(0, 10);
+      return `  [${date}] WO: ${r.orderNumber || '—'} | Type: ${r.type || '—'}\n    Findings: ${r.findings || '—'}\n    Result: ${r.result || '—'} | Service hours: ${r.hoursAtService?.toLocaleString() || '—'}h`;
+    }).join('\n');
+    specificHistorySection = `\n\n[specific_unit_maintenance_history — ${turbineContext.name || ''} / Unit ${turbineContext.id || ''}]\n${records}`;
+  }
+
+  // Enrich query with turbine context so the AI has full situational awareness
+  const contextHeader = turbineContext
+    ? `[EQUIPMENT CONTEXT]\nUnit ID: ${turbineContext.id || 'unknown'} | Model: ${turbineContext.name || 'unknown'} | Type: ${turbineContext.type || 'unknown'} | Location: ${turbineContext.location || 'unknown'}\nEquipment Manual Reference: ${docRef}\n\n`
+    : '';
+
+  const prompt =
+    `${contextHeader}[user_technical_manual — ${docRef}]\n${manual}\n\n` +
+    `[past_maintenance_history_notes]\n${history}${specificHistorySection}\n\n` +
+    `QUESTION (provide a complete, well-structured answer referencing the user_technical_manual and past_maintenance_history_notes above): ${query}`;
 
   const body = {
     system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.2, maxOutputTokens: 800, candidateCount: 1 },
+    generationConfig: { temperature: 0.2, maxOutputTokens: 2048, candidateCount: 1 },
     safetySettings: [
       { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
       { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
@@ -297,11 +591,14 @@ export default async function handler(req: any, res: any) {
       const answer =
         data?.candidates?.[0]?.content?.parts?.[0]?.text ||
         "I'm sorry, I couldn't generate a response.";
-      const context = isAlertQuery
-        ? `${MAINTENANCE_MANUAL_EXCERPT.trim()}\n\n${PAST_MAINTENANCE_HISTORY_NOTES.trim()}`
-        : MAINTENANCE_MANUAL_EXCERPT.trim();
 
-      res.status(200).json({ answer, context, model: modelId });
+      res.status(200).json({
+        answer,
+        context: `${manual.trim()}\n\n${history.trim()}`,
+        equipmentType,
+        docRef,
+        model: modelId,
+      });
       return;
     } catch (fetchErr: any) {
       console.error(`[api/ask-assistant] Fetch error for ${modelId}:`, fetchErr.message);
