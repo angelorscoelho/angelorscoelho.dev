@@ -48,7 +48,7 @@ function App() {
         <div className="lg:flex lg:justify-between lg:gap-12">
           
           {/* LEFT COLUMN: Sidebar */}
-          <header className="lg:sticky lg:top-0 lg:flex lg:max-h-screen lg:w-[35%] lg:flex-col lg:justify-between lg:py-24">
+          <header className="lg:sticky lg:top-0 lg:flex lg:max-h-screen lg:w-[35%] lg:flex-col lg:justify-between lg:py-24 lg:overflow-y-auto">
             <div>
               <div className="mb-8 block">
                 {/* 
