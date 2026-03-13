@@ -49,6 +49,13 @@ export const RESUME: ResumeData = {
   ],
   projects: [
     {
+      title: "Siemens Energy — AI Maintenance Dashboard",
+      description: "Proof-of-concept industrial RAG system for gas turbine fleet maintenance. A real-time dashboard tracks 18 turbines with live telemetry, while an AI assistant uses semantic retrieval (Google text-embedding-004 + cosine similarity over an S3 knowledge base) to answer maintenance queries — powered by Gemini 2.5 Pro. Showcases AI-augmented retrieval, agent-assisted interactions, and AWS serverless infrastructure as code.",
+      technologies: ["Vue 3", "AWS Lambda", "Python", "Google Gemini", "RAG", "AWS SAM", "Tailwind CSS"],
+      link: "https://www.angelorscoelho.dev/siemens",
+      image: "/siemens_preview.webp"
+    },
+    {
       title: "StackOverflow Code Identifier",
       description: "Untagged code identifier for StackOverflow posts. Uses REGEX with C/FLEX and Python3 to identify code snippets missing <code> tags. Recognizes C/Java, Python, Bash, and PHP while handling complex body content extraction.",
       technologies: ["C", "Flex", "Python 3", "Regex"],

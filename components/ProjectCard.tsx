@@ -24,7 +24,29 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         }}
       ></div>
 
-      <div className="z-10 sm:col-span-12">
+      {project.image && (
+        <div className="z-10 sm:col-span-4 mb-4 sm:mb-0">
+          <div className="overflow-hidden rounded-md border border-slate-700/50 group-hover:border-teal-700/40 transition-colors">
+            {project.link ? (
+              <a href={project.link} target="_blank" rel="noreferrer">
+                <img
+                  src={project.image}
+                  alt={`${project.title} preview`}
+                  className="w-full object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity"
+                />
+              </a>
+            ) : (
+              <img
+                src={project.image}
+                alt={`${project.title} preview`}
+                className="w-full object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity"
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className={`z-10 ${project.image ? 'sm:col-span-8' : 'sm:col-span-12'}`}>
         <h3 className="font-medium leading-snug text-slate-200">
           <div className="flex items-center gap-2">
              {project.link ? (
