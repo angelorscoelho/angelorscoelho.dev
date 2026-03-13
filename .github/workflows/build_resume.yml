@@ -86,6 +86,10 @@ jobs:
           mkdir -p src/assets
           cp "$PDF" src/assets/resume.pdf
 
+          # ── 4a. Also copy to public/ so the /resume permalink always serves the latest ──
+          mkdir -p public
+          cp "$PDF" public/resume.pdf
+
           # ── 4. Write traceability metadata alongside the PDF ──
           # "sha" / "shaShort" always reflect the resume repo HEAD — the exact
           # tree state the PDF was taken from.  "sourceSha" captures the human
@@ -105,6 +109,6 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/assets/resume.pdf src/assets/resume-meta.json
+          git add src/assets/resume.pdf src/assets/resume-meta.json public/resume.pdf
           git commit -m "ci: update resume.pdf [sha: ${RESUME_SHA_SHORT}]" || echo "no changes to commit"
           git push origin HEAD:main
