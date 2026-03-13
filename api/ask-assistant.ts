@@ -445,6 +445,11 @@ const PREFERRED_MODELS = [
   'gemini-pro',
 ];
 
+// Models that support thinkingConfig (Gemini 2.5+ family)
+const THINKING_MODEL_PREFIXES = ['gemini-2.5'];
+const supportsThinkingConfig = (modelId: string) =>
+  THINKING_MODEL_PREFIXES.some((prefix) => modelId.startsWith(prefix));
+
 const listAvailableModels = async (apiKey: string): Promise<string[]> => {
   try {
     const response = await fetch(`${GEMINI_API_BASE}?key=${apiKey}`);
@@ -533,7 +538,12 @@ export default async function handler(req: any, res: any) {
   const body = {
     systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.2, maxOutputTokens: 8192, candidateCount: 1 },
+    generationConfig: {
+      temperature: 0.2,
+      maxOutputTokens: 8192,
+      candidateCount: 1,
+      thinkingConfig: { thinkingBudget: 2048 },
+    },
     safetySettings: [
       { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
       { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
@@ -557,14 +567,26 @@ export default async function handler(req: any, res: any) {
 
   let lastError: any = null;
 
+  // Per-model fetch timeout: 28 s leaves buffer before the 60 s Vercel limit
+  const PER_MODEL_TIMEOUT_MS = 28_000;
+
   for (const modelId of candidates) {
     const url = `${GEMINI_API_BASE}/${modelId}:generateContent?key=${apiKey}`;
+    // Non-thinking models don't support thinkingConfig — strip it for those
+    const { thinkingConfig: _tc, ...baseGenerationConfig } = body.generationConfig;
+    const requestBody = supportsThinkingConfig(modelId)
+      ? body
+      : { ...body, generationConfig: baseGenerationConfig };
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), PER_MODEL_TIMEOUT_MS);
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(requestBody),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const data = await response.json();
       console.log(`[api/ask-assistant] model=${modelId} status=${response.status}`);
@@ -609,7 +631,12 @@ export default async function handler(req: any, res: any) {
       });
       return;
     } catch (fetchErr: any) {
-      console.error(`[api/ask-assistant] Fetch error for ${modelId}:`, fetchErr.message);
+      clearTimeout(timeoutId);
+      if (fetchErr.name === 'AbortError') {
+        console.warn(`[api/ask-assistant] Model ${modelId} timed out after ${PER_MODEL_TIMEOUT_MS}ms, trying next…`);
+      } else {
+        console.error(`[api/ask-assistant] Fetch error for ${modelId}:`, fetchErr.message);
+      }
       lastError = fetchErr;
       continue;
     }
