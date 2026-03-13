@@ -432,17 +432,12 @@ const SYSTEM_PROMPT =
   'Be precise, engineering-accurate, and use terminology appropriate for a field maintenance technician. ' +
   'Format responses with clear sections and numbered steps where applicable. Do not truncate your response.';
 
+// Fast models first — avoids burning the Vercel 60 s budget on slow "pro" models.
 const PREFERRED_MODELS = [
-  'gemini-2.5-pro-preview-06-05',
-  'gemini-2.5-pro-preview-05-06',
-  'gemini-2.5-pro-preview-03-25',
-  'gemini-2.5-pro',
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-preview-05-20',
   'gemini-2.0-flash',
-  'gemini-1.5-pro',
+  'gemini-2.5-flash',
   'gemini-1.5-flash',
-  'gemini-pro',
+  'gemini-2.5-pro',
 ];
 
 // Models that support thinkingConfig (Gemini 2.5+ family)
@@ -450,29 +445,14 @@ const THINKING_MODEL_PREFIXES = ['gemini-2.5'];
 const supportsThinkingConfig = (modelId: string) =>
   THINKING_MODEL_PREFIXES.some((prefix) => modelId.startsWith(prefix));
 
-const listAvailableModels = async (apiKey: string): Promise<string[]> => {
-  try {
-    const response = await fetch(`${GEMINI_API_BASE}?key=${apiKey}`);
-    if (!response.ok) {
-      console.error('[api/ask-assistant] Failed to list models, status:', response.status);
-      return [];
-    }
-    const data = await response.json();
-    const models = Array.isArray(data?.models) ? data.models : [];
-    return models
-      .filter((model: any) =>
-        Array.isArray(model?.supportedGenerationMethods) &&
-        model.supportedGenerationMethods.includes('generateContent')
-      )
-      .map((model: any) => String(model?.name || '').replace(/^models\//, ''))
-      .filter((name: string) => Boolean(name));
-  } catch (error) {
-    console.error('[api/ask-assistant] Failed to list models:', error);
-    return [];
-  }
-};
+// listAvailableModels is intentionally skipped at call-time to save 2-5 s.
+// Model 404 / quota errors are handled inline in the model loop (< 1 s each).
 
 export default async function handler(req: any, res: any) {
+  const FUNCTION_START = Date.now();
+  // Hard cap: leave an 8 s buffer before Vercel's maxDuration (60 s).
+  const MAX_FUNCTION_MS = 52_000;
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -542,7 +522,7 @@ export default async function handler(req: any, res: any) {
       temperature: 0.2,
       maxOutputTokens: 8192,
       candidateCount: 1,
-      thinkingConfig: { thinkingBudget: 2048 },
+      thinkingConfig: { thinkingBudget: 1024 },
     },
     safetySettings: [
       { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
@@ -552,25 +532,26 @@ export default async function handler(req: any, res: any) {
     ],
   };
 
-  const availableModels = await listAvailableModels(apiKey);
-  const preferred = PREFERRED_MODELS.filter((m) => availableModels.includes(m));
-  const fallback = availableModels.filter((m) => !PREFERRED_MODELS.includes(m));
-  const candidates = [...preferred, ...fallback].slice(0, 12);
-
-  if (candidates.length === 0) {
-    res.status(503).json({
-      error: 'no_supported_models',
-      details: 'No model with generateContent support was returned for this API key/project.',
-    });
-    return;
-  }
+  // ── Model selection ────────────────────────────────────────────────────────
+  // Skip the listAvailableModels() network call — it burns 2-5 s on every
+  // request.  Instead, try PREFERRED_MODELS directly; 404 / quota errors
+  // are handled inline and cost < 1 s each.
+  const candidates = PREFERRED_MODELS;
 
   let lastError: any = null;
 
-  // Per-model fetch timeout: 28 s leaves buffer before the 60 s Vercel limit
-  const PER_MODEL_TIMEOUT_MS = 28_000;
-
   for (const modelId of candidates) {
+    // ── Global time-budget check ───────────────────────────────────────────
+    const elapsed = Date.now() - FUNCTION_START;
+    const remaining = MAX_FUNCTION_MS - elapsed;
+    if (remaining < 5_000) {
+      console.warn(`[api/ask-assistant] Only ${remaining}ms left — aborting model loop`);
+      break;
+    }
+    // Give each model at most the remaining budget minus a 3 s safety margin,
+    // capped at 25 s so one slow model can't eat the whole budget.
+    const perModelTimeout = Math.min(25_000, remaining - 3_000);
+
     const url = `${GEMINI_API_BASE}/${modelId}:generateContent?key=${apiKey}`;
     // Non-thinking models don't support thinkingConfig — strip it for those
     const { thinkingConfig: _tc, ...baseGenerationConfig } = body.generationConfig;
@@ -578,8 +559,10 @@ export default async function handler(req: any, res: any) {
       ? body
       : { ...body, generationConfig: baseGenerationConfig };
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), PER_MODEL_TIMEOUT_MS);
+    const timeoutId = setTimeout(() => controller.abort(), perModelTimeout);
+    const fetchStart = Date.now();
     try {
+      console.log(`[api/ask-assistant] Trying model=${modelId} timeout=${perModelTimeout}ms`);
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -589,7 +572,8 @@ export default async function handler(req: any, res: any) {
       clearTimeout(timeoutId);
 
       const data = await response.json();
-      console.log(`[api/ask-assistant] model=${modelId} status=${response.status}`);
+      const fetchMs = Date.now() - fetchStart;
+      console.log(`[api/ask-assistant] model=${modelId} status=${response.status} took=${fetchMs}ms`);
 
       if (response.status === 404) {
         console.warn(`Model ${modelId} not found, trying next…`);
@@ -622,6 +606,9 @@ export default async function handler(req: any, res: any) {
         continue;
       }
 
+      const totalMs = Date.now() - FUNCTION_START;
+      console.log(`[api/ask-assistant] Success model=${modelId} total=${totalMs}ms`);
+
       res.status(200).json({
         answer,
         context: `${manual.trim()}\n\n${history.trim()}`,
@@ -632,15 +619,18 @@ export default async function handler(req: any, res: any) {
       return;
     } catch (fetchErr: any) {
       clearTimeout(timeoutId);
+      const fetchMs = Date.now() - fetchStart;
       if (fetchErr.name === 'AbortError') {
-        console.warn(`[api/ask-assistant] Model ${modelId} timed out after ${PER_MODEL_TIMEOUT_MS}ms, trying next…`);
+        console.warn(`[api/ask-assistant] Model ${modelId} timed out after ${fetchMs}ms, trying next…`);
       } else {
-        console.error(`[api/ask-assistant] Fetch error for ${modelId}:`, fetchErr.message);
+        console.error(`[api/ask-assistant] Fetch error for ${modelId} after ${fetchMs}ms:`, fetchErr.message);
       }
       lastError = fetchErr;
       continue;
     }
   }
 
+  const totalMs = Date.now() - FUNCTION_START;
+  console.error(`[api/ask-assistant] All models failed after ${totalMs}ms`);
   res.status(503).json({ error: 'all_models_failed', details: lastError });
 }
