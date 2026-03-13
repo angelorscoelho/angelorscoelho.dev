@@ -1,9 +1,9 @@
 {
-  "sha": "dbff31328178ed4fdcc9781fea07d10d2455e7dc",
-  "shaShort": "2455e7dc",
-  "sourceSha": "9ff97c297b3edda5d5b66efb3be479f6e8f24b3d",
-  "sourceShaShort": "e8f24b3d",
-  "builtAt": "2026-03-12T10:41:42Z",
-  "resumeCommitUrl": "https://github.com/angelorscoelho/resume/commit/dbff31328178ed4fdcc9781fea07d10d2455e7dc",
+  "sha": "9f4cf997ed642df3ac0ee1de00619730907a60a3",
+  "shaShort": "907a60a3",
+  "sourceSha": "de6892e910ac174819e49c4293c5ae65ca1f294c",
+  "sourceShaShort": "ca1f294c",
+  "builtAt": "2026-03-13T09:02:33Z",
+  "resumeCommitUrl": "https://github.com/angelorscoelho/resume/commit/9f4cf997ed642df3ac0ee1de00619730907a60a3",
   "resumeWorkflowUrl": "https://github.com/angelorscoelho/resume/actions/workflows/build-and-publish-resume.yml"
 }
