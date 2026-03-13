@@ -85,25 +85,31 @@ export const RESUME: ResumeData = {
       name: "Building AI Agents and Agentic Workflows Specialization", 
       issuer: "DeepLearning.AI", 
       year: "Ongoing",
-      url: "https://www.linkedin.com/in/angelorscoelho/details/certifications/"
+      url: "https://www.coursera.org/programs/bosch-learning-program-8hold/specializations/building-ai-agents-and-agentic-workflows?authProvider=bosch"
     },
     { 
       name: "AWS Cloud Solutions Architect Specialization", 
       issuer: "Coursera", 
       year: "2025",
-      url: "https://www.linkedin.com/in/angelorscoelho/details/certifications/"
+      url: "https://www.coursera.org/account/accomplishments/specialization/N2KXEZEGW96J"
     },
     { 
       name: "Prompt Engineering", 
       issuer: "Vanderbilt Univ.", 
       year: "2025",
-      url: "https://www.linkedin.com/in/angelorscoelho/details/certifications/"
+      url: "https://www.coursera.org/account/accomplishments/specialization/HPTQ605HG1RT"
     },
     { 
       name: "Jenkins: From Zero to Hero", 
       issuer: "LearnKartS", 
       year: "2025",
-      url: "https://www.linkedin.com/in/angelorscoelho/details/certifications/"
+      url: "https://www.coursera.org/account/accomplishments/specialization/certificate/ZXTDN19QJXYU"
+    },
+    { 
+      name: "Machine Learning with Python", 
+      issuer: "IBM / Coursera", 
+      year: "2024",
+      url: "https://www.coursera.org/account/accomplishments/certificate/WNJX883UT4G2"
     },
     { 
       name: "Machine Learning Specialization", 
@@ -118,7 +124,7 @@ export const RESUME: ResumeData = {
     databases: ["SQL Server", "PostgreSQL", "MariaDB", "MySQL", "Redis"],
     devops: ["GitHub Actions", "AWS", "Docker", "Jenkins", "Git", "CI/CD"],
     key: ["Process improvements", "CI/CD Infrastructure", "Full Stack (UI/UX Workflows)", "Backend Architecture", "AI-assisted development"],
-    learning: ["Advanced Agentic Workflows", "Model Context Protocol (MCP)", "LLM Orchestration"]
+    learning: ["Agentic Workflows", "LangChain", "LangGraph", "CrewAI", "Model Context Protocol (MCP)", "LLM Orchestration", "IaC (AWS SAM / CloudFormation)"]
   }
 };
 

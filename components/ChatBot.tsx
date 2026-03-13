@@ -35,6 +35,7 @@ export const ChatBot: React.FC = () => {
   const [isHoveringButton, setIsHoveringButton] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastMessageRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -50,9 +51,19 @@ export const ChatBot: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Scroll to the start of the newest message so the user can read from the top
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, isOpen]);
+    if (lastMessageRef.current) {
+      lastMessageRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [messages]);
+
+  // When opening the chat, jump to the bottom to show the most recent context
+  useEffect(() => {
+    if (isOpen) {
+      scrollToBottom();
+    }
+  }, [isOpen]);
 
   // Cycle Teaser Messages
   useEffect(() => {
@@ -147,7 +158,8 @@ export const ChatBot: React.FC = () => {
             >
               {messages.map((msg, idx) => (
                 <div 
-                  key={idx} 
+                  key={idx}
+                  ref={idx === messages.length - 1 ? lastMessageRef : null}
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div 
