@@ -164,6 +164,38 @@ function App() {
                     <span>View Full Résumé <span className="inline-block"><ExternalLinkIcon className="ml-1 inline-block h-4 w-4 shrink-0 transition-transform group-hover/link:-translate-y-1 group-hover/link:translate-x-1" /></span></span>
                   </a>
                 </div>
+
+                {/* Resume sneak-peek: shows ~1/3 of the first page; click opens the full PDF */}
+                <div
+                  className="mt-6 relative overflow-hidden rounded border border-slate-700/40"
+                  style={{ height: '340px' }}
+                >
+                  {/* Transparent overlay – handles click & shows pointer cursor + tooltip */}
+                  <a
+                    href={resume}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="absolute inset-0 z-10 cursor-pointer focus:outline focus:outline-2 focus:outline-teal-300"
+                    title="View Full Résumé"
+                    aria-label="View Full Résumé"
+                  />
+                  {/*
+                    Headless PDF iframe – interaction disabled so the overlay link handles events.
+                    The iframe is rendered taller than the container (≈ one full letter-page height)
+                    while the container clips it to ~340 px, revealing roughly the top 1/3 of the PDF.
+                  */}
+                  <iframe
+                    src={`${resume}#toolbar=0&navpanes=0&scrollbar=0`}
+                    className="w-full border-0"
+                    style={{ height: '1080px', pointerEvents: 'none' }}
+                    scrolling="no"
+                    title="Resume Preview"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  />
+                  {/* Gradient fade-out to hint there is more content below */}
+                  <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none z-[5]" />
+                </div>
               </div>
             </section>
 
