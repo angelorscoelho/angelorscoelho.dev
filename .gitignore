@@ -32,3 +32,4 @@ DEV_REPO_PAT_SETUP.md
 scripts/setup-secrets.sh
 scripts/setup-secrets.ps1
 README.md
+.vercel

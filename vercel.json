@@ -8,10 +8,12 @@
   "redirects": [
     { "source": "/resume", "destination": "/resume.pdf", "permanent": false }
   ],
+  "buildCommand": "npm run build && npm run build:fintrack",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/siemens/(.*)", "destination": "/siemens/index.html" },
-    { "source": "/poc/fintrack/(.*)", "destination": "/fintrack/index.html" },
+    { "source": "/poc/fintrack/:path*", "destination": "/fintrack/index.html" },
+    { "source": "/poc/fintrack", "destination": "/fintrack/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
