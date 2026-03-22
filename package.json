@@ -10,8 +10,9 @@
     "update:siemens": "git submodule update --init --remote siemens || true",
     "build:resume": "node scripts/build-resume.js",
     "build:siemens": "mkdir -p dist/siemens && cp -r siemens-prebuilt/* dist/siemens/",
+    "build:fintrack": "cd ../fintrack/frontend && npm ci --omit=dev && VITE_API_URL=https://fintrack-api.railway.app VITE_BASE_PATH=/poc/fintrack/ npm run build && mkdir -p ../../angelorscoelho.dev/dist/fintrack && xcopy /E /Y dist\\* ../../angelorscoelho.dev/dist\\fintrack\\",
     "prebuild": "npm run generate-images && npm run update:resume && npm run build:resume && npm run update:siemens",
-    "build": "npm run prebuild && tsc && vite build && npm run build:siemens",
+    "build": "npm run prebuild && tsc && vite build && npm run build:siemens && npm run build:fintrack",
     "preview": "vite preview"
   },
   "dependencies": {

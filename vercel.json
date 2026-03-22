@@ -11,6 +11,7 @@
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/siemens/(.*)", "destination": "/siemens/index.html" },
+    { "source": "/poc/fintrack/(.*)", "destination": "/fintrack/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
