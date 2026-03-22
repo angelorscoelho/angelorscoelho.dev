@@ -8,7 +8,8 @@
   "redirects": [
     { "source": "/resume", "destination": "/resume.pdf", "permanent": false }
   ],
-  "buildCommand": "npm run build && npm run build:fintrack",
+  "installCommand": "npm ci --include=dev",
+  "buildCommand": "npm run build",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/siemens/(.*)", "destination": "/siemens/index.html" },
